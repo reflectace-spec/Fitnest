@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const BUILD='2.0';
 const state={
@@ -45,8 +46,7 @@ function exById(id){return exercises.find(e=>e.id===id)}
 async function ensureSupabase(){
   if(state.supabase)return state.supabase;
   if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;
-  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-  state.supabase=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  state.supabase=await getSupabaseClient();
   return state.supabase;
 }
 
