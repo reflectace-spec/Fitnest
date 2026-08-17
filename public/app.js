@@ -8,3 +8,4 @@ import './app-v24-addon.js';
 import './app-v241-addon.js';
 import './app-v242-addon.js';
 import './app-v243-addon.js';
+import './app-v244-addon.js';
