@@ -22,6 +22,7 @@ jobs:
         run: |
           test -f public/build25.css
           test -f supabase/migrations/0011_exercise_wiki_v2.sql
+          test -f supabase/migrations/0012_exercise_favorites_least_privilege.sql
           grep -q "app-v25-addon.js" public/app.js
           grep -q "build25.css" public/index.html
           grep -q "fitnest-shell-v2-5" public/sw.js
