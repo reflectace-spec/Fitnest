@@ -1,0 +1,33 @@
+name: Fitnest Build 2.5.1 stability checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-build251:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate hotfix JavaScript
+        run: |
+          node --check public/app-v251-wiki.js
+          node --check public/app-v251-native.js
+          node --check public/sw.js
+      - name: Validate native PWA wiring
+        run: |
+          test -f public/build251.css
+          test -f supabase/migrations/0013_exercise_library_public_read.sql
+          test -f supabase/migrations/0014_exercise_library_read_only_grants.sql
+          grep -q "app-v251-wiki.js" public/app.js
+          grep -q "app-v251-native.js" public/app.js
+          ! grep -q "^import './app-v25-addon.js'" public/app.js
+          grep -q "maximum-scale=1,user-scalable=no" public/index.html
+          grep -q "fitnest-shell-v2-5-1" public/sw.js
