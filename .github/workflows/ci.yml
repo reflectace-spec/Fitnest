@@ -32,6 +32,7 @@ jobs:
           test -f public/build22.css
           test -f public/build23.css
           test -f supabase/migrations/0006_push_reminders.sql
+          test -f supabase/migrations/0007_push_reminder_deny_policies.sql
           test -f supabase/functions/push-dispatch/index.ts
       - name: Validate manifest
         run: python3 -m json.tool public/manifest.webmanifest >/dev/null
