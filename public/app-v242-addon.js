@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const PROFILE_KEY='fitnest.nutrition.profiles.v24';
 const ACTIVE_KEY='fitnest.nutrition.activeProfile.v24';
@@ -16,7 +17,7 @@ function splitAllergies(v=''){return String(v).split(',').map(x=>x.trim()).filte
 function unique(xs){return [...new Map(xs.map(x=>[norm(x),x])).values()]}
 function toast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2800)}
 
-async function client(){if(sb)return sb;if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
+async function client(){if(sb)return sb;if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;return sb=await getSupabaseClient()}
 async function syncCeliac(id,enabled,allergies){try{const c=await client();if(!c)return;const s=(await c.auth.getSession()).data.session;if(!s)return;await c.from('nutrition_profiles').update({gluten_free_celiac:enabled,allergies,updated_at:new Date().toISOString()}).eq('user_id',s.user.id).eq('id',id)}catch(e){console.warn('celiac sync',e)}}
 async function loadCloudCeliac(){try{const c=await client();if(!c)return;const s=(await c.auth.getSession()).data.session;if(!s)return;const{data,error}=await c.from('nutrition_profiles').select('id,gluten_free_celiac,allergies').eq('user_id',s.user.id);if(error)throw error;const map=celiacMap(),ps=profiles();for(const row of data||[]){map[row.id]=!!row.gluten_free_celiac;const p=ps.find(x=>x.id===row.id);if(p){p.glutenFreeCeliac=!!row.gluten_free_celiac;p.allergies=row.allergies||p.allergies||[]}}write(CELIAC_KEY,map);write(PROFILE_KEY,ps);run()}catch(e){console.warn('celiac load',e)}}
 
