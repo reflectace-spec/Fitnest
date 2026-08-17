@@ -13,15 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Unpack source bundle
+      - name: Reassemble and unpack source bundle
         shell: bash
         run: |
           set -euo pipefail
-          if [ ! -f .bootstrap/fitnest-source.zip ]; then
-            echo "Bootstrap bundle already removed."
+          if [ ! -f .bootstrap/chunk-06 ]; then
+            echo "Waiting for all bootstrap chunks."
             exit 0
           fi
-          unzip -oq .bootstrap/fitnest-source.zip -d .
+          cat .bootstrap/chunk-* | base64 -d > /tmp/fitnest-source.zip
+          unzip -t /tmp/fitnest-source.zip >/dev/null
+          unzip -oq /tmp/fitnest-source.zip -d .
           rm -rf .bootstrap
           rm -f .github/workflows/bootstrap.yml
           git config user.name "github-actions[bot]"
