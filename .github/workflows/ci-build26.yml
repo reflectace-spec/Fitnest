@@ -36,6 +36,8 @@ jobs:
           grep -q "api.openai.com/v1/responses" supabase/functions/generate-plan/index.ts
           grep -q "signInWithOAuth" public/app-v26-onboarding.js
           grep -q "provider:'google'" public/app-v26-onboarding.js
+          grep -q "So ist dein Plan aufgebaut" public/app-v26-onboarding.js
+          grep -q "data-summary-open" public/app-v26-onboarding.js
       - name: Guard secrets from public files
         run: |
           ! grep -R -E "sk-[A-Za-z0-9_-]{20,}|service_role" public --exclude='*.map'
