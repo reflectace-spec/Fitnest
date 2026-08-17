@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const BUILD='2.5.1';
 const CATALOG_KEY='fitnest.exerciseCatalog.v251';
@@ -39,8 +40,7 @@ async function loadCatalog(){
 async function cloudClient(){
   if(sb)return sb;
   try{
-    const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-    sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    sb=await getSupabaseClient();
     return sb;
   }catch{return null}
 }
