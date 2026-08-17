@@ -1,0 +1,53 @@
+name: Fitnest Build 2.7 account checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/app-v27-*.js'
+      - 'public/build27.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/migrations/0016_accounts_cloud_sync.sql'
+      - '.github/workflows/ci-build27.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/app-v27-*.js'
+      - 'public/build27.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/migrations/0016_accounts_cloud_sync.sql'
+      - '.github/workflows/ci-build27.yml'
+
+jobs:
+  build27:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check public/app-v27-auth.js
+          node --check public/app-v27-sync.js
+          node --check public/app-v27-guard.js
+      - name: Account integration
+        run: |
+          test -s public/build27.css
+          grep -q "app-v27-auth.js" public/app.js
+          grep -q "app-v27-sync.js" public/app.js
+          grep -q "app-v27-guard.js" public/app.js
+          grep -q "build27.css" public/index.html
+          grep -q "fitnest-shell-v2-7" public/sw.js
+          grep -q "app-v27-auth.js" public/sw.js
+          grep -q "app-v27-sync.js" public/sw.js
+      - name: Migration safety markers
+        run: |
+          test -s supabase/migrations/0016_accounts_cloud_sync.sql
+          grep -q "fitnest_sync_auth_profile" supabase/migrations/0016_accounts_cloud_sync.sql
+          grep -q "last_synced_at" supabase/migrations/0016_accounts_cloud_sync.sql
+          grep -q "revoke all on table public.profiles from anon" supabase/migrations/0016_accounts_cloud_sync.sql
+          grep -q "grant select, insert, update, delete on table public.profiles to authenticated" supabase/migrations/0016_accounts_cloud_sync.sql
+      - name: No account secrets in public files
+        run: |
+          ! grep -RniE "client[_ -]?secret|service[_ -]?role|BEGIN PRIVATE KEY" public/app-v27-*.js public/build27.css
