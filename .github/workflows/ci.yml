@@ -19,6 +19,7 @@ jobs:
       - name: Validate JavaScript
         run: |
           node --check public/app.js
+          node --check public/app-supabase.js
           node --check public/app-v2.js
           node --check public/app-v24-guard.js
           node --check public/app-v21-addon.js
@@ -31,7 +32,16 @@ jobs:
           node --check public/app-v243-addon.js
           node --check public/app-v244-addon.js
           node --check public/app-v244-safeapply.js
+          node --check public/app-v251-wiki.js
+          node --check public/app-v26-onboarding.js
+          node --check public/app-v26-surfaces.js
+          node --check public/app-v27-auth.js
+          node --check public/app-v27-sync.js
           node --check public/sw.js
+      - name: Guard shared Supabase client
+        run: |
+          test "$(grep -Rho "createClient(" public/app*.js | wc -l)" -eq 1
+          grep -q "app-supabase.js" public/sw.js
       - name: Validate assets
         run: |
           test -f public/assets/exercise-sprite.webp
