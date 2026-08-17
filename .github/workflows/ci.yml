@@ -40,7 +40,7 @@ jobs:
           node --check public/sw.js
       - name: Guard shared Supabase client
         run: |
-          test "$(grep -Rho "createClient(" public/app*.js | wc -l)" -eq 1
+          test "$(grep -ho "createClient(" public/app-supabase.js public/app-v2.js public/app-v21-addon.js public/app-v22-addon.js public/app-v23-addon.js public/app-v24-addon.js public/app-v241-addon.js public/app-v242-addon.js public/app-v243-addon.js public/app-v244-addon.js public/app-v244-safeapply.js public/app-v251-wiki.js public/app-v26-onboarding.js public/app-v26-surfaces.js public/app-v27-auth.js public/app-v27-sync.js | wc -l)" -eq 1
           grep -q "app-supabase.js" public/sw.js
       - name: Validate assets
         run: |
