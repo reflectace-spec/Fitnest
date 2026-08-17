@@ -6,3 +6,4 @@ import './app-v22-addon.js';
 import './app-v23-addon.js';
 import './app-v24-addon.js';
 import './app-v241-addon.js';
+import './app-v242-addon.js';

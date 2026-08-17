@@ -27,6 +27,7 @@ jobs:
           node --check public/app-v23-addon.js
           node --check public/app-v24-addon.js
           node --check public/app-v241-addon.js
+          node --check public/app-v242-addon.js
           node --check public/sw.js
       - name: Validate assets
         run: |
@@ -40,6 +41,7 @@ jobs:
           test -f supabase/migrations/0007_push_reminder_deny_policies.sql
           test -f supabase/migrations/0008_coach_nutrition_profiles.sql
           test -f supabase/migrations/0009_coach_nutrition_profile_index.sql
+          test -f supabase/migrations/0010_celiac_nutrition_profiles.sql
           test -f supabase/functions/push-dispatch/index.ts
           test -f supabase/functions/coach-analysis/index.ts
           test -f supabase/functions/recipe-generator/index.ts
@@ -48,5 +50,5 @@ jobs:
       - name: Guard public config
         run: |
           ! grep -Eqi '(service_role|sb_secret_|SUPABASE_SECRET|VAPID_PRIVATE|OPENAI_API_KEY)' public/config.js
-          ! grep -Eqi '(sk-[A-Za-z0-9_-]{20,}|sb_secret_)' public/app-v24-addon.js public/app-v241-addon.js
+          ! grep -Eqi '(sk-[A-Za-z0-9_-]{20,}|sb_secret_)' public/app-v24-addon.js public/app-v241-addon.js public/app-v242-addon.js
           ! grep -Eqi 'sk-[A-Za-z0-9_-]{20,}' supabase/functions/recipe-generator/index.ts
