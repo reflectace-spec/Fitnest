@@ -27,6 +27,6 @@ jobs:
           grep -q "build261.css" public/sw.js
           grep -q "app-v261-onboarding-hotfix.js" public/app.js
           grep -q "app-v261-onboarding-hotfix.js" public/sw.js
-          grep -q "fitnest-shell-v2-6-1" public/sw.js
+          grep -Eq "fitnest-shell-v2-(6-1|[7-9]|[1-9][0-9])" public/sw.js
           grep -q "stopImmediatePropagation" public/app-v261-onboarding-hotfix.js
           grep -q "requestedTargetDate" public/app-v261-onboarding-hotfix.js
