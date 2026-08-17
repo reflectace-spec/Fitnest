@@ -5,9 +5,6 @@ function readDraft(){
   try{return JSON.parse(localStorage.getItem(DRAFT)||'{}')||{}}catch{return{}}
 }
 function writeDraft(d){localStorage.setItem(DRAFT,JSON.stringify(d))}
-function localDate(d){
-  const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)
-}
 function showInline(message){
   const root=document.getElementById('v26Onboarding');
   if(!root)return;
@@ -58,11 +55,7 @@ document.addEventListener('click',event=>{
   const weeks=Math.max(1,(requested-Date.now())/(7*86400000));
   const requiredRate=Math.max(0,current-target)/weeks;
   if(requiredRate>1){
-    d.requestedTargetDate=d.targetDate;
-    const safeWeeks=Math.ceil(Math.max(1,current-target));
-    const safe=new Date();safe.setHours(12,0,0,0);safe.setDate(safe.getDate()+safeWeeks*7);
-    d.targetDate=localDate(safe);
-    sessionStorage.setItem('fitnest.v261.notice',`Dein ursprünglicher Zieltermin ${d.requestedTargetDate} wäre schneller als 1 kg pro Woche. Fitnest plant deshalb konservativ bis ${d.targetDate}; dein Wunschgewicht bleibt unverändert.`);
+    sessionStorage.setItem('fitnest.v261.notice',`Dein Zieltermin ${d.targetDate} würde etwa ${requiredRate.toFixed(1)} kg Abnahme pro Woche erfordern. Er bleibt gespeichert, Fitnest plant aus Sicherheitsgründen aber mit höchstens 1 kg pro Woche.`);
   }
 
   d.step=1;

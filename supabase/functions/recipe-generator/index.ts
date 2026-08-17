@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 
 const ORIGIN="https://fitnest.reflectace.workers.dev";
-const H={"Content-Type":"application/json","Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const H={"Content-Type":"application/json","Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const MODEL="gpt-5-mini";
 function res(x:unknown,s=200){return new Response(JSON.stringify(x),{status:s,headers:H})}
 function clamp(n:number,a:number,b:number){return Math.max(a,Math.min(b,n))}
