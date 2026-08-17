@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const BUILD='2.2';
 const KEY='fitnest.progress.';
@@ -21,8 +22,7 @@ function toast(msg){const t=document.getElementById('toast');if(!t)return;t.text
 async function supabase(){
   if(S.sb)return S.sb;
   if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;
-  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-  S.sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  S.sb=await getSupabaseClient();
   return S.sb;
 }
 
@@ -30,7 +30,7 @@ async function bootCloud(){
   try{
     const sb=await supabase();if(!sb)return;
     S.session=(await sb.auth.getSession()).data.session||null;
-    sb.auth.onAuthStateChange((_e,s)=>{S.session=s;if(s)loadRemote().then(refreshVisible);else{S.remote=null;refreshVisible()}});
+    sb.auth.onAuthStateChange((_e,s)=>{S.session=s;setTimeout(()=>{if(s)void loadRemote().then(refreshVisible);else{S.remote=null;refreshVisible()}},0)});
     if(S.session)await loadRemote();
   }catch(e){console.warn('progress boot',e)}
   refreshVisible();
