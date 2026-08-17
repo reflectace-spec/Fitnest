@@ -1,0 +1,29 @@
+name: Fitnest Build 2.6.1 onboarding hotfix checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-build261:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate onboarding hotfix JavaScript
+        run: |
+          node --check public/app-v261-onboarding-hotfix.js
+          node --check public/sw.js
+      - name: Validate hotfix wiring
+        run: |
+          grep -q "app-v261-onboarding-hotfix.js" public/app.js
+          grep -q "app-v261-onboarding-hotfix.js" public/sw.js
+          grep -q "fitnest-shell-v2-6-1" public/sw.js
+          grep -q "stopImmediatePropagation" public/app-v261-onboarding-hotfix.js
+          grep -q "requestedTargetDate" public/app-v261-onboarding-hotfix.js
