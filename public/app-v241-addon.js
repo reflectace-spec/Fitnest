@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const FN=`${CONFIG.supabaseUrl}/functions/v1/recipe-generator`;
 const PROFILE_KEY='fitnest.nutrition.profiles.v24';
@@ -13,7 +14,7 @@ function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function esc(v=''){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function toast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2800)}
 function activeProfile(){const ps=read(PROFILE_KEY,[]),id=localStorage.getItem(ACTIVE_KEY);return ps.find(x=>x.id===id)||ps.find(x=>x.isActive)||ps[0]||null}
-async function client(){if(sb)return sb;if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
+async function client(){if(sb)return sb;if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;return sb=await getSupabaseClient()}
 async function session(){const c=await client();return c?(await c.auth.getSession()).data.session||null:null}
 async function api(mode,data={},auth=false){const headers={'Content-Type':'application/json'};if(auth){const s=await session();if(!s)throw Object.assign(new Error('Für KI-Rezepte musst du in Fitnest angemeldet sein.'),{code:'auth_required'});headers.Authorization=`Bearer ${s.access_token}`}const r=await fetch(FN,{method:'POST',headers,body:JSON.stringify({mode,...data})}),j=await r.json().catch(()=>({ok:false}));if(!r.ok)throw Object.assign(new Error(j.message||j.code||`HTTP ${r.status}`),{code:j.code,status:r.status});return j}
 async function status(force=false){if(statusCache&&!force)return statusCache;try{return statusCache=await api('status')}catch{return statusCache={ok:false,openaiConfigured:false}}}
