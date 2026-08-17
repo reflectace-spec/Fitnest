@@ -1,0 +1,27 @@
+name: Fitnest Build 2.5 checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-build25:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate exercise wiki JavaScript
+        run: node --check public/app-v25-addon.js
+      - name: Validate Build 2.5 assets
+        run: |
+          test -f public/build25.css
+          test -f supabase/migrations/0011_exercise_wiki_v2.sql
+          grep -q "app-v25-addon.js" public/app.js
+          grep -q "build25.css" public/index.html
+          grep -q "fitnest-shell-v2-5" public/sw.js
