@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const PROFILE_KEY='fitnest.profile';
 const NUTRITION_PROFILES_KEY='fitnest.nutrition.profiles.v24';
@@ -19,7 +20,7 @@ function toast(m){const t=document.getElementById('toast');if(!t)return;t.textCo
 function profile(){return read(PROFILE_KEY,null)}
 function nutritionProfiles(){return read(NUTRITION_PROFILES_KEY,[])}
 function activeNutrition(){const ps=nutritionProfiles(),id=localStorage.getItem(ACTIVE_NUTRITION_KEY);return ps.find(x=>x.id===id)||ps.find(x=>x.isActive)||ps[0]||null}
-async function client(){if(sb)return sb;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
+async function client(){if(sb)return sb;return sb=await getSupabaseClient()}
 async function session(){const c=await client();return(await c.auth.getSession()).data.session||null}
 function calc(p){const now=new Date();now.setHours(12,0,0,0);const end=new Date(`${p.targetDate}T12:00:00`),weeks=Math.max(1,Math.max(7,Math.ceil((end-now)/86400000))/7),loss=Math.max(0,+p.currentWeight-(+p.targetWeight||0)),desiredRate=loss/weeks,w=+p.currentWeight||0,h=+p.height||0,a=+p.age||0,bmr=w&&h&&a?10*w+6.25*h-5*a+(p.sex==='female'?-161:5):0,tdee=bmr*((({low:1.25,medium:1.4,high:1.55})[p.activity])||1.3),rate=Math.min(1,desiredRate),wanted=rate*7700/7,maxDef=tdee?Math.max(0,Math.min(tdee*.25,tdee-bmr)):0,deficit=Math.min(wanted,maxDef),calories=tdee?round50(clamp(tdee-deficit,bmr,tdee)):null,plannedRate=deficit*7/7700,protein=w?round5(clamp(Math.min(w,(+p.targetWeight||w)*1.15)*1.6,50,250)):null;let stepGoal=+p.stepGoal||8000;if(loss>0&&desiredRate>plannedRate+.05&&stepGoal<10000)stepGoal=Math.min(10000,stepGoal+500);return{desiredRate,plannedRate,calories,protein,stepGoal,trainingDays:+p.trainingDays||3,minutes:+p.minutes||30}}
 function payload(p){return{diet:p.diet,allergies:p.allergies||[],dislikes:p.dislikes||[],glutenFreeCeliac:!!p.glutenFreeCeliac,calories:+p.calories,protein:+p.protein,pattern:p.pattern,mealsPerDay:+p.mealsPerDay,mealSchedule:p.schedule||[],budgetAmount:+p.budgetAmount||0,budgetPeriod:p.budgetPeriod||'week'}}
