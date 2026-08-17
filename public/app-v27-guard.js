@@ -1,0 +1,3 @@
+function toast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),3200)}
+function finalStep(){try{return JSON.parse(localStorage.getItem('fitnest.onboarding.v26.draft')||'{}').step===4}catch{return false}}
+document.addEventListener('click',e=>{const b=e.target.closest?.('#v26Onboarding [data-next]');if(!b||!finalStep()||window.__fitnestV27?.session)return;e.preventDefault();e.stopImmediatePropagation();toast('Bitte zuerst anmelden oder einen Fitnest-Account erstellen. Deine Eingaben bleiben gespeichert.');document.querySelector('#v26Onboarding [data-v27-email]')?.focus()},true);
