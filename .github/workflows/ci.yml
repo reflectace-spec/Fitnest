@@ -22,11 +22,13 @@ jobs:
           node --check public/app-v2.js
           node --check public/app-v21-addon.js
           node --check public/app-v21-navfix.js
+          node --check public/app-v22-addon.js
           node --check public/sw.js
       - name: Validate assets
         run: |
           test -f public/assets/exercise-sprite.webp
           test -f public/build21.css
+          test -f public/build22.css
       - name: Validate manifest
         run: python3 -m json.tool public/manifest.webmanifest >/dev/null
       - name: Guard public config
