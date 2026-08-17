@@ -25,7 +25,7 @@ jobs:
       - name: Validate Clean Start wiring
         run: |
           test -f public/build26.css
-          test -f supabase/migrations/0014_onboarding_profile_fields.sql
+          test -f supabase/migrations/0015_onboarding_profile_fields.sql
           test -f supabase/functions/generate-plan/index.ts
           head -n 1 public/app.js | grep -q "app-v26-bootstrap.js"
           grep -q "app-v26-onboarding.js" public/app.js
