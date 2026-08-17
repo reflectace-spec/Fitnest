@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { exerciseImage } from './exercise-images.js';
 
 const BUILD='2.0';
 const state={
@@ -126,7 +127,8 @@ function scheduleFor(date=new Date()){
 }
 
 function visual(ex,large=false){
-  if(Number.isInteger(ex?.sprite)){const col=ex.sprite%4,row=Math.floor(ex.sprite/4),x=col*100/3,y=row*100;return `<div class="exercise-photo${large?' large':''}" role="img" aria-label="${esc(ex.name)}: Start- und Ausführungsposition" style="background-image:url('./assets/exercise-sprite.webp');background-position:${x}% ${y}%"></div>`}
+  const image=exerciseImage(ex?.id);
+  if(image)return `<img class="exercise-photo${large?' large':''}" src="${image}" alt="${esc(ex.name)}: Start- und Endposition" decoding="async">`;
   return `<div class="exercise-fallback${large?' large':''}"><span>${esc(ex?.name||'Übung')}</span><small>Bild folgt</small></div>`;
 }
 
