@@ -36,6 +36,7 @@ jobs:
           test -f supabase/migrations/0006_push_reminders.sql
           test -f supabase/migrations/0007_push_reminder_deny_policies.sql
           test -f supabase/migrations/0008_coach_nutrition_profiles.sql
+          test -f supabase/migrations/0009_coach_nutrition_profile_index.sql
           test -f supabase/functions/push-dispatch/index.ts
           test -f supabase/functions/coach-analysis/index.ts
       - name: Validate manifest
