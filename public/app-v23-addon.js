@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const BUILD='2.3';
 const FN=`${CONFIG.supabaseUrl}/functions/v1/push-dispatch`;
@@ -11,7 +12,7 @@ function toast(m){const t=document.getElementById('toast');if(!t)return;t.textCo
 function deviceId(){let v=localStorage.getItem(K+'deviceId');if(!v){v=crypto.randomUUID();localStorage.setItem(K+'deviceId',v)}return v}
 function deviceSecret(){let v=localStorage.getItem(K+'deviceSecret');if(!v){const b=crypto.getRandomValues(new Uint8Array(32));v=btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');localStorage.setItem(K+'deviceSecret',v)}return v}
 function b64(v){const p='='.repeat((4-v.length%4)%4),s=(v+p).replace(/-/g,'+').replace(/_/g,'/'),r=atob(s);return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))}
-async function authHeader(){try{const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');const c=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const s=(await c.auth.getSession()).data.session;return s?.access_token?{Authorization:`Bearer ${s.access_token}`}:{}}catch{return{}}}
+async function authHeader(){try{const c=await getSupabaseClient();const s=(await c.auth.getSession()).data.session;return s?.access_token?{Authorization:`Bearer ${s.access_token}`}:{}}catch{return{}}}
 async function call(mode,data={}){const headers={'Content-Type':'application/json',...(await authHeader())};const r=await fetch(FN,{method:'POST',headers,body:JSON.stringify({mode,...data})});const j=await r.json().catch(()=>({ok:false}));if(!r.ok)throw new Error(j.message||j.code||`HTTP ${r.status}`);return j}
 async function preload(){try{const j=await call('public-key');S.vapidKey=j.publicKey||'';if(S.vapidKey)CONFIG.vapidPublicKey=S.vapidKey}catch(e){console.warn('VAPID preload',e)}}
 function supported(){return 'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window}
