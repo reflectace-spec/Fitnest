@@ -21,6 +21,7 @@ jobs:
           node --check public/app.js
           node --check public/app-v2.js
           node --check public/app-v21-addon.js
+          node --check public/app-v21-navfix.js
           node --check public/sw.js
       - name: Validate assets
         run: |
