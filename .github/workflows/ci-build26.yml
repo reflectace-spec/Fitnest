@@ -1,0 +1,41 @@
+name: Fitnest Build 2.6 checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-build26:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Build 2.6 JavaScript
+        run: |
+          node --check public/app-v26-bootstrap.js
+          node --check public/app-v26-onboarding.js
+          node --check public/app-v26-surfaces.js
+          node --check public/sw.js
+      - name: Validate Clean Start wiring
+        run: |
+          test -f public/build26.css
+          test -f supabase/migrations/0015_onboarding_profile_fields.sql
+          test -f supabase/functions/generate-plan/index.ts
+          head -n 1 public/app.js | grep -q "app-v26-bootstrap.js"
+          grep -q "app-v26-onboarding.js" public/app.js
+          grep -q "app-v26-surfaces.js" public/app.js
+          grep -q "build26.css" public/index.html
+          grep -q "fitnest-shell-v2-6" public/sw.js
+          grep -q "OPENAI_API_KEY" supabase/functions/generate-plan/index.ts
+          grep -q "api.openai.com/v1/responses" supabase/functions/generate-plan/index.ts
+          grep -q "signInWithOAuth" public/app-v26-onboarding.js
+          grep -q "provider:'google'" public/app-v26-onboarding.js
+      - name: Guard secrets from public files
+        run: |
+          ! grep -R -E "sk-[A-Za-z0-9_-]{20,}|service_role" public --exclude='*.map'
