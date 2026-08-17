@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const V=window.__fitnestV27=window.__fitnestV27||{session:null,google:false,sync:{state:'idle',text:'Cloud-Sync bereit',at:null}};
 const K={complete:'fitnest.onboarding.complete.v26',profile:'fitnest.profile',weights:'fitnest.weights',completed:'fitnest.completed',history:'fitnest.workoutHistory',train:'fitnest.ai.trainingPlan.v26',profiles:'fitnest.nutrition.profiles.v24',active:'fitnest.nutrition.activeProfile.v24',plans:'fitnest.nutrition.plans',logs:'fitnest.nutrition.logs',saved:'fitnest.nutrition.saved',celiac:'fitnest.nutrition.celiacProfiles.v242',favorites:'fitnest.exerciseFavorites.v25',reviews:'fitnest.progress.reviews'};
@@ -7,7 +8,7 @@ const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{retur
 const writeChanged=(k,v)=>{const n=JSON.stringify(v),p=localStorage.getItem(k);if(n===p)return false;localStorage.setItem(k,n);return true};
 function hash(s=''){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(36)}
 function emit(state,text='',at=null){V.sync={state,text,at};document.dispatchEvent(new CustomEvent('fitnest:v27-sync',{detail:V.sync}))}
-async function client(){if(sb)return sb;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
+async function client(){if(sb)return sb;return sb=await getSupabaseClient()}
 function assertOk(a){const x=a.map(r=>r?.error).find(Boolean);if(x)throw x}
 function nutrition(x){return{id:x.id,name:x.name,diet:x.diet_style,allergies:x.allergies||[],dislikes:x.dislikes||[],glutenFreeCeliac:!!x.gluten_free_celiac,calories:+x.calories,protein:+x.protein_g,pattern:x.eating_pattern,mealsPerDay:+x.meals_per_day,schedule:x.meal_schedule||[],budgetAmount:+x.budget_amount||0,budgetPeriod:x.budget_period||'week',currency:x.currency||'EUR',isActive:!!x.is_active,createdAt:x.created_at,updatedAt:x.updated_at}}
 async function hydrate(session){
@@ -62,5 +63,5 @@ async function hydrate(session){
   }catch(e){console.error('v27 sync',e);emit('error',e.message||'Cloud nicht erreichbar')}
   finally{running=false}
 }
-async function boot(){try{const c=await client(),s=(await c.auth.getSession()).data.session||V.session;V.session=s||null;if(s)await hydrate(s);c.auth.onAuthStateChange((_event,next)=>{V.session=next||null;if(next&&next.user.id!==lastUser)void hydrate(next);if(!next){lastUser='';emit('idle','Abgemeldet')}});document.addEventListener('fitnest:v27-auth',e=>{const next=e.detail?.session;V.session=next||null;if(next)void hydrate(next)})}catch(e){console.error('v27 sync boot',e);emit('error','Cloud-Sync konnte nicht gestartet werden')}}
+async function boot(){try{const c=await client(),s=(await c.auth.getSession()).data.session||V.session;V.session=s||null;if(s)await hydrate(s);c.auth.onAuthStateChange((_event,next)=>{V.session=next||null;setTimeout(()=>{if(next&&next.user.id!==lastUser)void hydrate(next);if(!next){lastUser='';emit('idle','Abgemeldet')}},0)});document.addEventListener('fitnest:v27-auth',e=>{const next=e.detail?.session;V.session=next||null;if(next)void hydrate(next)})}catch(e){console.error('v27 sync boot',e);emit('error','Cloud-Sync konnte nicht gestartet werden')}}
 void boot();
