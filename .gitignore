@@ -1,0 +1,6 @@
+.DS_Store
+.dev.vars
+.env
+node_modules/
+.wrangler/
+public/config.local.js
