@@ -15,4 +15,5 @@ import './app-v244-safeapply.js';
 import './app-v251-wiki.js';
 import './app-v251-native.js';
 import './app-v26-onboarding.js';
+import './app-v261-onboarding-hotfix.js';
 import './app-v26-surfaces.js';
