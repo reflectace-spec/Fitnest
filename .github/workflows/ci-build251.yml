@@ -25,6 +25,7 @@ jobs:
         run: |
           test -f public/build251.css
           test -f supabase/migrations/0013_exercise_library_public_read.sql
+          test -f supabase/migrations/0014_exercise_library_read_only_grants.sql
           grep -q "app-v251-wiki.js" public/app.js
           grep -q "app-v251-native.js" public/app.js
           ! grep -q "^import './app-v25-addon.js'" public/app.js
