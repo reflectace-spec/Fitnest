@@ -1,10 +1,10 @@
 import { CONFIG } from './config.js';
+import { exerciseImage } from './exercise-images.js';
 
 const BUILD='2.5.1';
 const CATALOG_KEY='fitnest.exerciseCatalog.v251';
 const FAV_KEY='fitnest.exerciseFavorites.v25';
 const FILTER_KEY='fitnest.exerciseFilters.v251';
-const SPRITES={squat:0,pushup:1,'reverse-lunge':2,'glute-bridge':3,'bird-dog':4,plank:5,mountain:6,'jumping-jack':7};
 let catalog=read(CATALOG_KEY,[]);
 let favorites=new Set(read(FAV_KEY,[]));
 let filters={q:'',category:'all',level:'all',equipment:'all',favoritesOnly:false,...read(FILTER_KEY,{})};
@@ -75,8 +75,8 @@ function filtered(){
   })
 }
 function visual(x){
-  const sprite=SPRITES[x.id];
-  if(Number.isInteger(sprite)){const col=sprite%4,row=Math.floor(sprite/4),px=col*100/3,py=row*100;return `<div class="v25-photo" style="background-image:url('./assets/exercise-sprite.webp');background-position:${px}% ${py}%" aria-label="${esc(x.name)}"></div>`}
+  const image=exerciseImage(x.id);
+  if(image)return `<img class="v25-photo" src="${image}" alt="${esc(x.name)}: Start- und Endposition" loading="lazy" decoding="async">`;
   const mark=({ 'lower-body':'LB','upper-body':'UB',core:'C',cardio:'HR',mobility:'M'})[x.category]||'FX';
   return `<div class="v25-fallback"><span>${mark}</span><small>${esc(categoryLabel(x.category))}</small></div>`
 }

@@ -24,6 +24,10 @@ jobs:
       - name: Validate native PWA wiring
         run: |
           test -f public/build251.css
+          test -f public/exercise-images.js
+          test "$(grep -o "data:image/webp;base64" public/exercise-images.js | wc -l)" -eq 25
+          grep -q "exerciseImage" public/app-v251-wiki.js
+          grep -q "exercise-images.js" public/sw.js
           test -f supabase/migrations/0013_exercise_library_public_read.sql
           test -f supabase/migrations/0014_exercise_library_read_only_grants.sql
           grep -q "app-v251-wiki.js" public/app.js
