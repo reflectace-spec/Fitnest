@@ -5,7 +5,7 @@ const ORIGIN = "https://fitnest.reflectace.workers.dev";
 const H = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": ORIGIN,
-  "Access-Control-Allow-Headers": "authorization, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const MODEL = "gpt-5-mini";
