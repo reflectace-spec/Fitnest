@@ -1,11 +1,12 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const V=window.__fitnestV27=window.__fitnestV27||{session:null,google:false,sync:{state:'idle',text:'Cloud-Sync bereit',at:null}};
 let sb=null,busy=false;
 const esc=(v='')=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const initials=(v='')=>String(v).trim().split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]?.toUpperCase()).join('')||'◎';
 function toast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),3400)}
-async function client(){if(sb)return sb;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
+async function client(){if(sb)return sb;return sb=await getSupabaseClient()}
 async function settings(){try{const r=await fetch(`${CONFIG.supabaseUrl}/auth/v1/settings`,{headers:{apikey:CONFIG.supabasePublishableKey}}),j=await r.json();V.google=!!j?.external?.google}catch{V.google=false}}
 function nameOf(s=V.session){return s?.user?.user_metadata?.full_name||s?.user?.user_metadata?.name||s?.user?.email?.split('@')[0]||'Fitnest'}
 function provider(s=V.session){return (s?.user?.app_metadata?.provider||s?.user?.identities?.[0]?.provider)==='google'?'Google':'E-Mail'}
@@ -25,4 +26,4 @@ function profile(force=false){const root=document.getElementById('sheetContent')
 function refresh(force=false){onboarding(force);profile(force);const a=document.getElementById('profileButton');if(a){a.textContent=V.session?initials(nameOf()):'◎';a.setAttribute('aria-label',V.session?`Profil · ${V.session.user.email||'angemeldet'}`:'Profil · nicht angemeldet')}}
 function observe(){const o=document.getElementById('v26Onboarding');if(o&&!o.dataset.v27AuthObserved){o.dataset.v27AuthObserved='1';let q=false;new MutationObserver(()=>{if(q)return;q=true;queueMicrotask(()=>{q=false;onboarding()})}).observe(o,{childList:true,subtree:true})}const sh=document.getElementById('sheetContent');if(sh&&!sh.dataset.v27AuthObserved){sh.dataset.v27AuthObserved='1';let q=false;new MutationObserver(()=>{if(q)return;q=true;queueMicrotask(()=>{q=false;profile()})}).observe(sh,{childList:true,subtree:true})}}
 document.addEventListener('fitnest:v27-sync',e=>{V.sync=e.detail||V.sync;refresh(true)});document.getElementById('profileButton')?.addEventListener('click',()=>setTimeout(()=>profile(true),0));
-(async()=>{try{await settings();const c=await client();V.session=(await c.auth.getSession()).data.session||null;observe();refresh(true);c.auth.onAuthStateChange((_event,s)=>{V.session=s||null;refresh(true);document.dispatchEvent(new CustomEvent('fitnest:v27-auth',{detail:{session:V.session}}))});setTimeout(()=>{observe();refresh(true)},300)}catch(e){console.error('v27 auth',e);observe();refresh(true)}})();
+(async()=>{try{await settings();const c=await client();V.session=(await c.auth.getSession()).data.session||null;observe();refresh(true);c.auth.onAuthStateChange((_event,s)=>{V.session=s||null;setTimeout(()=>{refresh(true);document.dispatchEvent(new CustomEvent('fitnest:v27-auth',{detail:{session:V.session}}))},0)});setTimeout(()=>{observe();refresh(true)},300)}catch(e){console.error('v27 auth',e);observe();refresh(true)}})();

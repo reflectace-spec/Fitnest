@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const COMPLETE='fitnest.onboarding.complete.v26',DRAFT='fitnest.onboarding.v26.draft',TRAIN='fitnest.ai.trainingPlan.v26';
 const NPROFILES='fitnest.nutrition.profiles.v24',NACTIVE='fitnest.nutrition.activeProfile.v24',NPLANS='fitnest.nutrition.plans',CELIAC='fitnest.nutrition.celiacProfiles.v242';
@@ -13,8 +14,8 @@ function toast(m){const t=document.getElementById('toast');if(!t)return;t.textCo
 function schedule(n=3){const p={1:[['Tagesmahlzeit','18:00']],2:[['Mahlzeit 1','12:00'],['Mahlzeit 2','19:00']],3:[['Frühstück','08:00'],['Mittagessen','13:00'],['Abendessen','19:00']],4:[['Frühstück','08:00'],['Mittagessen','12:30'],['Snack','16:30'],['Abendessen','20:00']],5:[['Mahlzeit 1','08:00'],['Mahlzeit 2','11:00'],['Mahlzeit 3','14:00'],['Mahlzeit 4','17:00'],['Mahlzeit 5','20:00']],6:[['Mahlzeit 1','07:30'],['Mahlzeit 2','10:30'],['Mahlzeit 3','13:00'],['Mahlzeit 4','15:30'],['Mahlzeit 5','18:00'],['Mahlzeit 6','20:30']]};return p[n].map(([label,time],i)=>({id:`meal_${i+1}`,label,time}))}
 function base(){return{step:0,currentWeight:'',targetWeight:'',targetDate:future(84),height:'',age:'',sex:'male',activity:'low',goal:'weight_loss',level:'beginner',trainingDays:3,minutes:30,stepGoal:8000,waterGoal:2.5,equipment:[],diet:'omnivore',celiac:false,allergies:'',dislikes:'',budget:70,budgetPeriod:'week',meals:3,schedule:schedule(3),profileId:uuid()}}
 function getDraft(){return{...base(),...read(DRAFT,{})}}function save(d){write(DRAFT,d)}
-async function client(){if(sb)return sb;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
-async function session(){return(await(await client()).auth.getSession()).data.session||null}
+async function client(){if(sb)return sb;return sb=await getSupabaseClient()}
+async function session(){const current=window.__fitnestV27?.session;if(current?.access_token)return current;const c=await client();return c?(await c.auth.getSession()).data.session||null:null}
 async function authSettings(force=false){if(settings&&!force)return settings;try{const r=await fetch(`${CONFIG.supabaseUrl}/auth/v1/settings`,{headers:{apikey:CONFIG.supabasePublishableKey}}),j=await r.json();return settings={google:!!j?.external?.google}}catch{return settings={google:false}}}
 async function googleLogin(){save(getDraft());const st=await authSettings(true);if(!st.google){toast('Google ist im Fitnest-Supabase noch nicht aktiviert');render();return}const c=await client(),{error}=await c.auth.signInWithOAuth({provider:'google',options:{redirectTo:CONFIG.appUrl||location.origin}});if(error){console.error(error);toast('Google-Anmeldung konnte nicht gestartet werden')}}
 const f=(l,x)=>`<div class="v26-field"><label>${l}</label>${x}</div>`,opt=(v,l,c)=>`<option value="${v}" ${String(v)===String(c)?'selected':''}>${l}</option>`;
@@ -36,11 +37,44 @@ async function account(){const h=document.querySelector('[data-account]');if(!h)
 function energy(d){const weeks=Math.max(1,(new Date(`${d.targetDate}T12:00:00`)-new Date())/(7*86400000)),w=+d.currentWeight,t=+d.targetWeight,rate=Math.max(0,w-t)/weeks;if(rate>1)throw new Error('Zieltermin ist zu aggressiv');const bmr=10*w+6.25*(+d.height)-5*(+d.age)+(d.sex==='female'?-161:5),tdee=bmr*({low:1.25,medium:1.4,high:1.55}[d.activity]||1.3),def=Math.min(rate*7700/7,Math.max(0,Math.min(tdee*.25,tdee-bmr))),cal=round50(clamp(tdee-def,bmr,tdee)),protein=round5(clamp(Math.min(w,t*1.15)*(d.goal==='strength'?1.8:1.6),50,250));return{calories:cal,protein,bmr:Math.round(bmr),tdee:round50(tdee),rate,planned:def*7/7700}}
 function alls(d){const a=split(d.allergies);if(d.celiac)a.push('Gluten','Zöliakie');return[...new Set(a)]}
 function np(d,e){return{diet:d.diet,allergies:alls(d),dislikes:split(d.dislikes),glutenFreeCeliac:d.celiac,calories:e.calories,protein:e.protein,pattern:d.schedule.length===1?'omad':'custom',mealsPerDay:d.schedule.length,mealSchedule:d.schedule,budgetAmount:d.budget,budgetPeriod:d.budgetPeriod}}
-async function ai(url,body,token){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(body)}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.code||`HTTP ${r.status}`);return j}
+async function ai(url,body,token){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.supabasePublishableKey,Authorization:`Bearer ${token}`},body:JSON.stringify(body)}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.code||`HTTP ${r.status}`);return j}
 function monday(){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return iso(d)}
 async function persist(d,e,s,tr,food){const c=await client(),u=s.user.id,now=new Date().toISOString(),today=iso(),id=d.profileId||uuid(),a=alls(d),dis=split(d.dislikes),pattern=d.schedule.length===1?'omad':'custom';d.profileId=id;const q=async(p,l)=>{const r=await p;if(r.error)throw new Error(`${l}: ${r.error.message}`)};
  await q(c.from('profiles').upsert({user_id:u,age:+d.age,height_cm:+d.height,sex_for_energy_formula:d.sex,activity_level:d.activity,training_days:d.trainingDays,session_minutes:d.minutes,step_goal:d.stepGoal,water_goal_l:d.waterGoal,training_level:d.level,primary_goal:d.goal,equipment:d.equipment,onboarding_version:'2.6',onboarding_completed_at:now,updated_at:now}),'Profil');await q(c.from('goals').update({status:'paused',updated_at:now}).eq('user_id',u).eq('status','active'),'Ziel');await q(c.from('goals').insert({user_id:u,start_weight_kg:+d.currentWeight,target_weight_kg:+d.targetWeight,target_date:d.targetDate,status:'active'}),'Ziel');await q(c.from('nutrition_preferences').upsert({user_id:u,diet_style:d.diet,allergies:a,dislikes:dis,meals_per_day:d.schedule.length,updated_at:now}),'Ernährung');await q(c.from('nutrition_profiles').update({is_active:false,updated_at:now}).eq('user_id',u).eq('is_active',true),'Ernährung');await q(c.from('nutrition_profiles').upsert({id,user_id:u,name:'Standard',diet_style:d.diet,allergies:a,dislikes:dis,calories:e.calories,protein_g:e.protein,eating_pattern:pattern,meals_per_day:d.schedule.length,meal_schedule:d.schedule,budget_amount:d.budget,budget_period:d.budgetPeriod,currency:'EUR',is_active:true,gluten_free_celiac:d.celiac,updated_at:now}),'Ernährungsprofil');await q(c.from('nutrition_targets').upsert({user_id:u,valid_from:today,calories:e.calories,protein_g:e.protein,source:'openai-onboarding-v2.6'},{onConflict:'user_id,valid_from'}),'Ernährungsziel');await q(c.from('body_metrics').upsert({user_id:u,measured_on:today,weight_kg:+d.currentWeight},{onConflict:'user_id,measured_on'}),'Gewicht');await q(c.from('workout_plans').upsert({user_id:u,week_start:monday(),plan:{source:tr.source,model:tr.model,sessions:tr.sessions,coachNote:tr.coachNote||'',generatedAt:now},generation_version:'openai-onboarding-v2.6'},{onConflict:'user_id,week_start'}),'Trainingsplan');for(const p of food.plans||[])await q(c.from('meal_plans').upsert({user_id:u,plan_date:p.date,meals:p.meals,nutrition_profile_id:id},{onConflict:'user_id,plan_date'}),'Essensplan');
  const core={currentWeight:+d.currentWeight,targetWeight:+d.targetWeight,targetDate:d.targetDate,height:+d.height,age:+d.age,sex:d.sex,activity:d.activity,trainingDays:d.trainingDays,minutes:d.minutes,stepGoal:d.stepGoal,waterGoal:d.waterGoal,trainingLevel:d.level,primaryGoal:d.goal,equipment:d.equipment};write('fitnest.profile',core);write('fitnest.weights',[{date:today,value:+d.currentWeight}]);const lp={id,name:'Standard',diet:d.diet,allergies:a,dislikes:dis,glutenFreeCeliac:d.celiac,calories:e.calories,protein:e.protein,pattern,mealsPerDay:d.schedule.length,schedule:d.schedule,budgetAmount:d.budget,budgetPeriod:d.budgetPeriod,currency:'EUR',isActive:true,createdAt:now,updatedAt:now};write(NPROFILES,[lp]);localStorage.setItem(NACTIVE,id);write(CELIAC,{[id]:d.celiac});const store={};for(const p of food.plans||[])store[p.date]={...p,profileId:id,profileName:'Standard',generatedAt:now,source:'openai',model:food.model};write(NPLANS,store);write(TRAIN,{...tr,generatedAt:now,weekStart:monday()});localStorage.setItem('fitnest.ai.recipeConsent','yes');localStorage.setItem('fitnest.ai.trainingConsent','yes');localStorage.setItem(COMPLETE,'yes');save(d)}
-async function finish(d){if(busy)return;if(!document.querySelector('[data-consent]')?.checked){toast('Bitte die KI-Datenübertragung bestätigen');return}const s=await session();if(!s){toast('Bitte zuerst mit Google anmelden');await account();return}let e;try{e=energy(d)}catch(x){toast(x.message);return}busy=true;const state=document.querySelector('[data-ai]'),copy=document.querySelector('[data-ai-copy]'),btn=document.querySelector('[data-next]');state?.classList.add('show');if(btn){btn.disabled=true;btn.textContent='KI plant …'}try{const payload=np(d,e);const [tr,food]=await Promise.all([ai(TRAIN_FN,{currentWeight:+d.currentWeight,targetWeight:+d.targetWeight,targetDate:d.targetDate,height:+d.height,age:+d.age,sex:d.sex,activity:d.activity,trainingLevel:d.level,primaryGoal:d.goal,trainingDays:d.trainingDays,minutes:d.minutes,equipment:d.equipment},s.access_token),ai(RECIPE_FN,{mode:'generate',days:7,startDate:iso(),profile:payload},s.access_token)]);if(tr.source!=='openai'||food.source!=='openai')throw new Error('KI konnte gerade nicht beide Pläne erzeugen. Bitte erneut versuchen.');if(copy)copy.textContent='Pläne erstellt. Fitnest speichert jetzt alles.';await persist(d,e,s,tr,food);sessionStorage.removeItem('fitnest.cleanStart.justReset');sessionStorage.setItem('fitnest.v26.afterOnboarding','plan');location.reload()}catch(x){console.error('v26 onboarding',x);if(copy)copy.textContent=x.message;toast(x.message);if(btn){btn.disabled=false;btn.textContent='Mit KI Pläne erstellen'}}finally{busy=false}}
+async function finish(d){
+ if(busy)return;
+ const state=document.querySelector('[data-ai]'),copy=document.querySelector('[data-ai-copy]'),btn=document.querySelector('[data-next]');
+ const show=(message)=>{state?.classList.add('show');if(copy)copy.textContent=message;toast(message)};
+ if(!document.querySelector('[data-consent]')?.checked){show('Bitte die KI-Datenübertragung bestätigen');return}
+ busy=true;
+ state?.classList.add('show');
+ if(copy)copy.textContent='Anmeldung wird geprüft …';
+ if(btn){btn.disabled=true;btn.textContent='Sitzung prüfen …'}
+ try{
+  const s=await session();
+  if(!s){show('Bitte zuerst mit Google anmelden');await account();return}
+  const e=energy(d);
+  if(copy)copy.textContent='Trainingsplan und 7-Tage-Essensplan werden mit KI erzeugt.';
+  if(btn)btn.textContent='KI plant …';
+  const payload=np(d,e);
+  const [tr,food]=await Promise.all([
+   ai(TRAIN_FN,{currentWeight:+d.currentWeight,targetWeight:+d.targetWeight,targetDate:d.targetDate,height:+d.height,age:+d.age,sex:d.sex,activity:d.activity,trainingLevel:d.level,primaryGoal:d.goal,trainingDays:d.trainingDays,minutes:d.minutes,equipment:d.equipment},s.access_token),
+   ai(RECIPE_FN,{mode:'generate',days:7,startDate:iso(),profile:payload},s.access_token)
+  ]);
+  if(tr.source!=='openai'||food.source!=='openai')throw new Error('KI konnte gerade nicht beide Pläne erzeugen. Bitte erneut versuchen.');
+  if(copy)copy.textContent='Pläne erstellt. Fitnest speichert jetzt alles.';
+  await persist(d,e,s,tr,food);
+  sessionStorage.removeItem('fitnest.cleanStart.justReset');
+  sessionStorage.setItem('fitnest.v26.afterOnboarding','plan');
+  location.reload();
+ }catch(x){
+  console.error('v26 onboarding',x);
+  show(x.message||'Die Pläne konnten nicht erstellt werden. Bitte erneut versuchen.');
+ }finally{
+  busy=false;
+  if(localStorage.getItem(COMPLETE)!=='yes'&&btn){btn.disabled=false;btn.textContent='Mit KI Pläne erstellen'}
+ }
+}
 
-(async()=>{try{const c=await client();c.auth.onAuthStateChange(()=>{if(getDraft().step===4)render()})}catch{}if(localStorage.getItem(COMPLETE)!=='yes')render()})();
+(async()=>{try{const c=await client();c.auth.onAuthStateChange(()=>setTimeout(()=>{if(getDraft().step===4)render()},0))}catch{}if(localStorage.getItem(COMPLETE)!=='yes')render()})();
