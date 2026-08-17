@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { getSupabaseClient } from './app-supabase.js';
 
 const BUILD='2.4.4';
 const PROFILE_KEY='fitnest.profile';
@@ -26,7 +27,7 @@ function nutritionProfiles(){return read(NUTRITION_PROFILES_KEY,[])}
 function activeNutritionProfile(){const ps=nutritionProfiles(),id=localStorage.getItem(ACTIVE_NUTRITION_KEY);return ps.find(x=>x.id===id)||ps.find(x=>x.isActive)||ps[0]||null}
 function currentWeekStart(offset=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+(offset*7));return iso(d)}
 
-async function client(){if(sb)return sb;if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;const{createClient}=await import('https://esm.sh/@supabase/supabase-js@2');return sb=createClient(CONFIG.supabaseUrl,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}
+async function client(){if(sb)return sb;if(!CONFIG.supabaseUrl||!CONFIG.supabasePublishableKey)return null;return sb=await getSupabaseClient()}
 async function session(){const c=await client();return c?(await c.auth.getSession()).data.session||null:null}
 
 function profileFromForm(form){const f=new FormData(form),p=Object.fromEntries(f.entries());['currentWeight','targetWeight','height','age','trainingDays','minutes','stepGoal','waterGoal'].forEach(k=>p[k]=Number(p[k]));return p}
