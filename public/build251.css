@@ -1,0 +1,7 @@
+html,body{touch-action:manipulation;overscroll-behavior-y:none;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior:none}
+button,.tab,.avatar-button,.day-chip,.v25-card,.v25-chip,.v25-relation,.primary,.secondary,.ghost{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,select,textarea{font-size:16px!important;touch-action:manipulation}
+.sheet-inner,.week-strip,.v25-category-row{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+img,.v25-photo,.v25-fallback{-webkit-user-drag:none;user-drag:none}
+@media (hover:none){button{cursor:default}}
