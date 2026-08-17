@@ -1,3 +1,4 @@
+import './app-v26-bootstrap.js';
 import './app-v2.js';
 import './app-v24-guard.js';
 import './app-v21-addon.js';
@@ -13,3 +14,5 @@ import './app-v244-safeapply.js';
 // Superseded for runtime stability: app-v25-addon.js
 import './app-v251-wiki.js';
 import './app-v251-native.js';
+import './app-v26-onboarding.js';
+import './app-v26-surfaces.js';
