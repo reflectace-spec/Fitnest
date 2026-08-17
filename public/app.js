@@ -17,3 +17,6 @@ import './app-v251-native.js';
 import './app-v26-onboarding.js';
 import './app-v261-onboarding-hotfix.js';
 import './app-v26-surfaces.js';
+import './app-v27-auth.js';
+import './app-v27-sync.js';
+import './app-v27-guard.js';
