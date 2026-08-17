@@ -5,9 +5,6 @@ function readDraft(){
   try{return JSON.parse(localStorage.getItem(DRAFT)||'{}')||{}}catch{return{}}
 }
 function writeDraft(d){localStorage.setItem(DRAFT,JSON.stringify(d))}
-function localDate(d){
-  const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)
-}
 function showInline(message){
   const root=document.getElementById('v26Onboarding');
   if(!root)return;
