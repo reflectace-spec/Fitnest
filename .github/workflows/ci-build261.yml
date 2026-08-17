@@ -22,6 +22,9 @@ jobs:
           node --check public/sw.js
       - name: Validate hotfix wiring
         run: |
+          test -f public/build261.css
+          grep -q "build261.css" public/index.html
+          grep -q "build261.css" public/sw.js
           grep -q "app-v261-onboarding-hotfix.js" public/app.js
           grep -q "app-v261-onboarding-hotfix.js" public/sw.js
           grep -q "fitnest-shell-v2-6-1" public/sw.js
