@@ -1,0 +1,59 @@
+name: Fitnest Build 3.3 guided workout checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build33:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check browser module syntax
+        run: node --check public/app-v33-workout.js
+
+      - name: Verify app shell integration
+        run: |
+          grep -q "app-v33-workout.js" public/app.js
+          grep -q "build33.css" public/index.html
+          grep -q "app-v33-workout.js" public/sw.js
+          grep -q "build33.css" public/sw.js
+          grep -q "fitnest-shell-v3-3-0" public/sw.js
+
+      - name: Verify guided workout flow
+        run: |
+          grep -q "new MutationObserver" public/app-v33-workout.js
+          grep -q "workout-session-list" public/app-v33-workout.js
+          grep -q "data-v33-complete" public/app-v33-workout.js
+          grep -q "data-v33-rest-clock" public/app-v33-workout.js
+          grep -q "data-v33-finish" public/app-v33-workout.js
+          grep -q "Sätze sind noch offen" public/app-v33-workout.js
+          grep -q "object-fit:contain" public/build33.css
+
+      - name: Verify persistence and adaptive feedback
+        run: |
+          grep -q "fitnest.workoutUi.v33" public/app-v33-workout.js
+          grep -q "workout_sessions" public/app-v33-workout.js
+          grep -q "workout_set_logs" public/app-v33-workout.js
+          grep -q "daily_adherence" public/app-v33-workout.js
+          grep -q "onConflict:'user_id,activity_date,item_type,item_key'" public/app-v33-workout.js
+          grep -q "fitnest:v28-adherence-saved" public/app-v28-daily.js
+          grep -q "completedSets" public/app-v33-workout.js
+          grep -q "averageRpe" public/app-v33-workout.js
+
+      - name: Verify existing RLS ownership remains in force
+        run: |
+          grep -q "alter table public.daily_adherence enable row level security" supabase/migrations/0017_daily_adherence.sql
+          grep -q "(select auth.uid()) = user_id" supabase/migrations/0017_daily_adherence.sql
+          grep -q "workout_sessions_owner_all" supabase/migrations/0001_initial.sql
+          grep -q "workout_set_logs_owner_all" supabase/migrations/0003_workout_logging.sql
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
