@@ -23,3 +23,4 @@ import './app-v27-guard.js';
 import './app-v28-daily.js';
 import './app-v29-adaptive.js';
 import './app-v30-nutrition.js';
+import './app-v31-shopping.js';
