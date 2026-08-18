@@ -56,6 +56,28 @@ Die aktuelle Cloudflare Dokumentation empfiehlt Workers Static Assets für neue 
 
 Serverseitiger Web Push, VAPID, Geräteverwaltung und der Scheduler für Trainings-, Wiege- und Tageserinnerungen sind produktiv eingerichtet. Build 3.5 ergänzt Installation, Update Hinweise, Offline Status, App Shortcuts und eine Geräteübersicht. Auf iPhone und iPad muss Fitnest über Safari zum Home Bildschirm hinzugefügt werden, bevor Hintergrund Push aktiviert werden kann.
 
+## Gesundheitsdaten
+
+Build 3.6 ergänzt einen Gesundheitsdaten Hub im Fortschrittsbereich:
+
+- Apple Health Import aus der entpackten `export.xml`
+- Schutz vor doppelten Schritt- und Schlafwerten aus mehreren Apple Health Quellen
+- universeller CSV Import mit Vorschau vor dem Speichern
+- tägliche Erfassung von Gewicht, Schritten, Schlaf, Wasser und Energie
+- lokale Verarbeitung der Importdatei
+- Synchronisierung mit den bestehenden, RLS geschützten Tabellen `body_metrics` und `daily_checkins`
+- Erhalt bestehender Felder bei Teilimporten
+
+Eine direkte HealthKit oder Health Connect Verbindung benötigt eine native iOS beziehungsweise Android App. Die PWA kennzeichnet diese Grenze transparent und simuliert keine Gerätesynchronisierung.
+
+## Nächste Builds
+
+1. Build 3.7: Coach 2.0 mit Schlaf-, Schritt- und Erholungssignalen
+2. Build 3.8: native App Grundlage für iOS und Android
+3. Build 3.9: Apple HealthKit und Android Health Connect Synchronisierung
+4. Build 4.0: Qualitäts-, Datenschutz- und Store Readiness
+5. Build 4.1: TestFlight und Google Play Closed Beta
+
 ## Rechtliches
 
 Impressum und Datenschutzerklärung enthalten noch Platzhalter für ladungsfähige Anschrift und Kontakt. Nicht unverändert öffentlich launchen.

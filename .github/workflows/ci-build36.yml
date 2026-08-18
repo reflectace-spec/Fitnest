@@ -1,0 +1,65 @@
+name: Fitnest Build 3.6 health data hub checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build36:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check browser module syntax
+        run: node --input-type=module --check < public/app-v36-health.js
+
+      - name: Verify app shell integration
+        run: |
+          grep -q "app-v36-health.js" public/app.js
+          grep -q "build36.css" public/index.html
+          grep -q "app-v36-health.js" public/sw.js
+          grep -q "build36.css" public/sw.js
+          grep -q "fitnest-shell-v3-6-0" public/sw.js
+
+      - name: Verify health import flows
+        run: |
+          grep -q "parseAppleHealth" public/app-v36-health.js
+          grep -q "parseCsv" public/app-v36-health.js
+          grep -q "HKQuantityTypeIdentifierBodyMass" public/app-v36-health.js
+          grep -q "HKQuantityTypeIdentifierStepCount" public/app-v36-health.js
+          grep -q "HKCategoryTypeIdentifierSleepAnalysis" public/app-v36-health.js
+          grep -q "data-v36-confirm" public/app-v36-health.js
+          grep -q "Private Verarbeitung" public/app-v36-health.js
+
+      - name: Test Apple Health and CSV parsers
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const source=fs.readFileSync('public/app-v36-health.js','utf8').replace("import { getSupabaseClient } from './app-supabase.js';","const getSupabaseClient=async()=>{throw new Error('not used')};");
+          const module=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+          const xml=`<?xml version="1.0"?><HealthData><Record type="HKQuantityTypeIdentifierBodyMass" unit="kg" value="90.5" startDate="2026-08-17 08:00:00 +0200"/><Record type="HKQuantityTypeIdentifierStepCount" sourceName="iPhone" unit="count" value="1200" startDate="2026-08-17 09:00:00 +0200"/><Record type="HKQuantityTypeIdentifierStepCount" sourceName="iPhone" unit="count" value="800" startDate="2026-08-17 10:00:00 +0200"/><Record type="HKQuantityTypeIdentifierStepCount" sourceName="Apple Watch" unit="count" value="1800" startDate="2026-08-17 10:00:00 +0200"/><Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleepCore" startDate="2026-08-17T00:00:00+02:00" endDate="2026-08-17T02:30:00+02:00"/></HealthData>`;
+          const apple=module.parseAppleHealth(xml);
+          if(apple.length!==1||apple[0].weight!==90.5||apple[0].steps!==2000||apple[0].sleepHours!==2.5)throw new Error('Apple Health parser failed');
+          const csv='Datum;Gewicht_kg;Schritte;Schlaf_Stunden;Wasser_l;Energie\n17.08.2026;90,4;8500;7,5;2,2;4';
+          const rows=module.parseCsv(csv);
+          if(rows.length!==1||rows[0].weight!==90.4||rows[0].steps!==8500||rows[0].waterL!==2.2)throw new Error('CSV parser failed');
+          console.log('Build 3.6 parser tests: OK');
+          NODE
+
+      - name: Verify safe data persistence
+        run: |
+          grep -q "body_metrics" public/app-v36-health.js
+          grep -q "daily_checkins" public/app-v36-health.js
+          grep -q "onConflict:'user_id,measured_on'" public/app-v36-health.js
+          grep -q "onConflict:'user_id,checkin_date'" public/app-v36-health.js
+          grep -q "body_metrics_owner_all" supabase/migrations/0001_initial.sql
+          grep -q "daily_checkins_owner_all" supabase/migrations/0001_initial.sql
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
