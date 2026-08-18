@@ -26,3 +26,4 @@ import './app-v30-nutrition.js';
 import './app-v31-shopping.js';
 import './app-v32-recipes.js';
 import './app-v33-workout.js';
+import './app-v34-progress.js';
