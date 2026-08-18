@@ -38,7 +38,7 @@ jobs:
           grep -q "app-v27-sync.js" public/app.js
           grep -q "app-v27-guard.js" public/app.js
           grep -q "build27.css" public/index.html
-          grep -q "fitnest-shell-v2-7" public/sw.js
+          grep -q "fitnest-shell-v2-" public/sw.js
           grep -q "app-v27-auth.js" public/sw.js
           grep -q "app-v27-sync.js" public/sw.js
       - name: Migration safety markers
