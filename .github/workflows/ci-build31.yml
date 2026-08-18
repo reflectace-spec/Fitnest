@@ -1,0 +1,51 @@
+name: Fitnest Build 3.1 shopping list checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/app-v31-shopping.js'
+      - 'public/build31.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/functions/recipe-generator/**'
+      - '.github/workflows/ci-build31.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/app-v31-shopping.js'
+      - 'public/build31.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/functions/recipe-generator/**'
+      - '.github/workflows/ci-build31.yml'
+
+jobs:
+  build31:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: node --check public/app-v31-shopping.js
+      - name: Shopping interface integration
+        run: |
+          test -s public/app-v31-shopping.js
+          test -s public/build31.css
+          grep -q "app-v31-shopping.js" public/app.js
+          grep -q "build31.css" public/index.html
+          grep -q "fitnest-shell-v3-1" public/sw.js
+          grep -q "app-v31-shopping.js" public/sw.js
+          grep -q "build31.css" public/sw.js
+      - name: Persistence and plan separation
+        run: |
+          grep -q "from('shopping_items')" public/app-v31-shopping.js
+          grep -q "manual-" public/app-v31-shopping.js
+          grep -q "v30-" public/app-v31-shopping.js
+          grep -q "estimated_cost_eur" public/app-v31-shopping.js
+          grep -q "Planänderungen ersetzen nur automatisch erzeugte Zutaten" public/app-v31-shopping.js
+          grep -q "estimated_cost_eur" supabase/functions/recipe-generator/index.ts
+          grep -q "formatAmounts" supabase/functions/recipe-generator/index.ts
+      - name: No public secrets
+        run: |
+          ! grep -RniE "client[_ -]?secret|service[_ -]?role|BEGIN PRIVATE KEY" public/app-v31-shopping.js public/build31.css
