@@ -20,3 +20,4 @@ import './app-v26-surfaces.js';
 import './app-v27-auth.js';
 import './app-v27-sync.js';
 import './app-v27-guard.js';
+import './app-v28-daily.js';
