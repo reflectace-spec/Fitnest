@@ -1,0 +1,76 @@
+name: Fitnest Build 3.7 coach checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build37:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check browser module syntax
+        run: node --input-type=module --check < public/app-v37-coach.js
+
+      - name: Check coach Edge Function
+        run: deno check supabase/functions/coach-analysis/index.ts
+
+      - name: Verify app shell integration
+        run: |
+          grep -q "app-v37-coach.js" public/app.js
+          grep -q "build37.css" public/index.html
+          grep -q "app-v37-coach.js" public/sw.js
+          grep -q "build37.css" public/sw.js
+          grep -q "fitnest-shell-v3-7-0" public/sw.js
+
+      - name: Test coach signal rules
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const source=fs.readFileSync('public/app-v37-coach.js','utf8')
+            .replace("import { CONFIG } from './config.js';","const CONFIG={supabaseUrl:'https://example.supabase.co'};")
+            .replace("import { getSupabaseClient } from './app-supabase.js';","const getSupabaseClient=async()=>null;");
+          const module=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+          const day=n=>new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+          const tired=module.analyzeSignals({profile:{stepGoal:10000,waterGoal:2.5},health:[0,1,2].map(n=>({date:day(n),sleepHours:5.5,energy:2,steps:5000,waterL:1.2})),workouts:[{date:day(1),rpe:9},{date:day(3),rpe:9}]});
+          if(tired.level!=='low'||tired.blocking!==false||!tired.actions.some(x=>x.includes('verfügbar')))throw new Error('Low recovery must remain advisory');
+          const stable=module.analyzeSignals({profile:{stepGoal:8000},health:[0,1,2,3,4].map(n=>({date:day(n),sleepHours:7.5,energy:4,steps:8500})),workouts:[{date:day(1),rpe:6},{date:day(3),rpe:6.5}]});
+          if(stable.level!=='stable'||stable.confidence!=='hoch')throw new Error('Stable signal classification failed');
+          const weight=module.analyzeSignals({health:[],weights:[{date:day(7),value:90},{date:day(0),value:88}]});
+          if(weight.level!=='attention'||weight.blocking!==false)throw new Error('Weight safety hint failed');
+          const merged=module.combineHealth([{date:day(0),sleepHours:8}],[{checkin_date:day(0),sleep_hours:6,steps:9000}]);
+          if(merged[0].sleepHours!==8||merged[0].steps!==9000)throw new Error('Health merge failed');
+          console.log('Build 3.7 coach rule tests: OK');
+          NODE
+
+      - name: Verify privacy and advisory guarantees
+        run: |
+          grep -q "fitnest.coach.aiConsent.v37" public/app-v37-coach.js
+          grep -q "3.7-health-signals" public/app-v37-coach.js
+          grep -q "consentVersion!==CONSENT_VERSION" supabase/functions/coach-analysis/index.ts
+          grep -q 'blocking:false' public/app-v37-coach.js
+          grep -q 'blocking:false' supabase/functions/coach-analysis/index.ts
+          grep -q "Hinweis, keine Sperre" public/app-v37-coach.js
+
+      - name: Verify existing protected data sources
+        run: |
+          grep -q "daily_checkins" public/app-v37-coach.js
+          grep -q "workout_sessions" public/app-v37-coach.js
+          grep -q "body_metrics" public/app-v37-coach.js
+          grep -q "daily_checkins_owner_all" supabase/migrations/0001_initial.sql
+          grep -q "workout_sessions_owner_all" supabase/migrations/0001_initial.sql
+          grep -q "body_metrics_owner_all" supabase/migrations/0001_initial.sql
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
