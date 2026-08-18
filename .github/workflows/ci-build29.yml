@@ -1,0 +1,57 @@
+name: Fitnest Build 2.9 adaptive week checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/app-v29-adaptive.js'
+      - 'public/build29.css'
+      - 'public/app-v27-sync.js'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/functions/adaptive-week/**'
+      - '.github/workflows/ci-build29.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/app-v29-adaptive.js'
+      - 'public/build29.css'
+      - 'public/app-v27-sync.js'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/functions/adaptive-week/**'
+      - '.github/workflows/ci-build29.yml'
+
+jobs:
+  build29:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check public/app-v29-adaptive.js
+          node --check public/app-v27-sync.js
+      - name: Adaptive interface integration
+        run: |
+          test -s public/app-v29-adaptive.js
+          test -s public/build29.css
+          grep -q "app-v29-adaptive.js" public/app.js
+          grep -q "build29.css" public/index.html
+          grep -q "fitnest-shell-v2-9" public/sw.js
+          grep -q "app-v29-adaptive.js" public/sw.js
+          grep -q "build29.css" public/sw.js
+          grep -q "x.week_start<=today" public/app-v27-sync.js
+      - name: Adaptive function safety
+        run: |
+          test -s supabase/functions/adaptive-week/index.ts
+          test -s supabase/functions/adaptive-week/deno.json
+          grep -q 'body.consent!==true' supabase/functions/adaptive-week/index.ts
+          grep -q 'db.auth.getUser(token)' supabase/functions/adaptive-week/index.ts
+          grep -q 'No automatic calorie' public/app-v29-adaptive.js || grep -q 'Keine automatische Kaloriensenkung' public/app-v29-adaptive.js
+          grep -q 'openai-adaptive-v2.9' supabase/functions/adaptive-week/index.ts
+          grep -q 'status:"accepted"' supabase/functions/adaptive-week/index.ts
+          grep -q 'status:"dismissed"' supabase/functions/adaptive-week/index.ts
+      - name: No public secrets
+        run: |
+          ! grep -RniE "client[_ -]?secret|service[_ -]?role|BEGIN PRIVATE KEY" public/app-v29-adaptive.js public/build29.css
