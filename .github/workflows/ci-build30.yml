@@ -1,0 +1,50 @@
+name: Fitnest Build 3.0 adaptive nutrition checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/app-v30-nutrition.js'
+      - 'public/build30.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/functions/recipe-generator/**'
+      - '.github/workflows/ci-build30.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/app-v30-nutrition.js'
+      - 'public/build30.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/functions/recipe-generator/**'
+      - '.github/workflows/ci-build30.yml'
+
+jobs:
+  build30:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: node --check public/app-v30-nutrition.js
+      - name: Build 3.0 integration
+        run: |
+          test -s public/app-v30-nutrition.js
+          test -s public/build30.css
+          grep -q "app-v30-nutrition.js" public/app.js
+          grep -q "build30.css" public/index.html
+          grep -q "fitnest-shell-v3-0" public/sw.js
+          grep -q "app-v30-nutrition.js" public/sw.js
+          grep -q "build30.css" public/sw.js
+      - name: Nutrition safety and persistence
+        run: |
+          grep -q "db.auth.getUser(token)" supabase/functions/recipe-generator/index.ts
+          grep -q "body.mode==='accept'" supabase/functions/recipe-generator/index.ts
+          grep -q "celiac_guard_rejected" supabase/functions/recipe-generator/index.ts
+          grep -q "v30-" supabase/functions/recipe-generator/index.ts
+          grep -q "Kalorien und Protein bleiben am Profilziel" public/app-v30-nutrition.js
+          grep -q "Speicherung erst nach ausdrücklicher Übernahme" public/app-v30-nutrition.js
+      - name: No public secrets
+        run: |
+          ! grep -RniE "client[_ -]?secret|service[_ -]?role|BEGIN PRIVATE KEY" public/app-v30-nutrition.js public/build30.css
