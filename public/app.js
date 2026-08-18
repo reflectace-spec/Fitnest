@@ -29,3 +29,4 @@ import './app-v33-workout.js';
 import './app-v34-progress.js';
 import './app-v35-pwa.js';
 import './app-v36-health.js';
+import './app-v37-coach.js';

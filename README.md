@@ -70,13 +70,23 @@ Build 3.6 ergänzt einen Gesundheitsdaten Hub im Fortschrittsbereich:
 
 Eine direkte HealthKit oder Health Connect Verbindung benötigt eine native iOS beziehungsweise Android App. Die PWA kennzeichnet diese Grenze transparent und simuliert keine Gerätesynchronisierung.
 
+## Coach 2.0
+
+Build 3.7 verbindet Schlaf, Energie, Schritte, Wasser, Gewichtstrend und Trainingsbelastung zu einer gemeinsamen Tagesempfehlung:
+
+- lokale regelbasierte Auswertung ohne KI Einwilligung
+- klare Datenlage mit niedriger, mittlerer oder hoher Aussagekraft
+- freiwillige Empfehlungen ohne Sperre für Training oder Planerstellung
+- keine automatische Änderung von Trainingsplänen oder Kalorienzielen
+- eigene erweiterte Einwilligung vor der Übertragung von Gesundheitsdaten an die KI
+- serverseitige Absicherung der Einwilligung über die Version `3.7-health-signals`
+
 ## Nächste Builds
 
-1. Build 3.7: Coach 2.0 mit Schlaf-, Schritt- und Erholungssignalen
-2. Build 3.8: native App Grundlage für iOS und Android
-3. Build 3.9: Apple HealthKit und Android Health Connect Synchronisierung
-4. Build 4.0: Qualitäts-, Datenschutz- und Store Readiness
-5. Build 4.1: TestFlight und Google Play Closed Beta
+1. Build 3.8: native App Grundlage für iOS und Android
+2. Build 3.9: Apple HealthKit und Android Health Connect Synchronisierung
+3. Build 4.0: Qualitäts-, Datenschutz- und Store Readiness
+4. Build 4.1: TestFlight und Google Play Closed Beta
 
 ## Rechtliches
 
