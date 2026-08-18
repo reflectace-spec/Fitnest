@@ -1,0 +1,50 @@
+name: Fitnest Build 2.8 daily adherence checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/app-v28-daily.js'
+      - 'public/build28.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/migrations/0017_daily_adherence.sql'
+      - '.github/workflows/ci-build28.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/app-v28-daily.js'
+      - 'public/build28.css'
+      - 'public/app.js'
+      - 'public/index.html'
+      - 'public/sw.js'
+      - 'supabase/migrations/0017_daily_adherence.sql'
+      - '.github/workflows/ci-build28.yml'
+
+jobs:
+  build28:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: node --check public/app-v28-daily.js
+      - name: Daily dashboard integration
+        run: |
+          test -s public/app-v28-daily.js
+          test -s public/build28.css
+          grep -q "app-v28-daily.js" public/app.js
+          grep -q "build28.css" public/index.html
+          grep -q "fitnest-shell-v2-8" public/sw.js
+          grep -q "app-v28-daily.js" public/sw.js
+          grep -q "build28.css" public/sw.js
+      - name: Adherence migration safety
+        run: |
+          test -s supabase/migrations/0017_daily_adherence.sql
+          grep -q "alter table public.daily_adherence enable row level security" supabase/migrations/0017_daily_adherence.sql
+          grep -q "revoke all on table public.daily_adherence from anon" supabase/migrations/0017_daily_adherence.sql
+          grep -q "grant select, insert, update, delete on table public.daily_adherence to authenticated" supabase/migrations/0017_daily_adherence.sql
+          test "$(grep -c '^create policy' supabase/migrations/0017_daily_adherence.sql)" -eq 4
+          grep -q "with check ((select auth.uid()) = user_id)" supabase/migrations/0017_daily_adherence.sql
+      - name: No public secrets
+        run: |
+          ! grep -RniE "client[_ -]?secret|service[_ -]?role|BEGIN PRIVATE KEY" public/app-v28-daily.js public/build28.css
