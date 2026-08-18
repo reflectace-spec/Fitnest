@@ -1,0 +1,51 @@
+name: Fitnest Build 3.2 recipe and cook mode checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build32:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check browser module syntax
+        run: node --check public/app-v32-recipes.js
+
+      - name: Check Edge Function TypeScript syntax
+        run: node --experimental-strip-types --check supabase/functions/recipe-generator/index.ts
+
+      - name: Verify app shell integration
+        run: |
+          grep -q "app-v32-recipes.js" public/app.js
+          grep -q "build32.css" public/index.html
+          grep -q "app-v32-recipes.js" public/sw.js
+          grep -q "build32.css" public/sw.js
+          grep -q "fitnest-shell-v3-2" public/sw.js
+
+      - name: Verify recipe and cooking features
+        run: |
+          grep -q "data-v32-cook" public/app-v32-recipes.js
+          grep -q "data-v32-serving" public/app-v32-recipes.js
+          grep -q "data-v32-favorite" public/app-v32-recipes.js
+          grep -q "data-v32-eaten" public/app-v32-recipes.js
+          grep -q "saved_meals" public/app-v32-recipes.js
+          grep -q "daily_adherence" public/app-v32-recipes.js
+
+      - name: Verify safe replacement flow
+        run: |
+          grep -q "mode:'replace'" public/app-v32-recipes.js
+          grep -q "replacePlanMeal" supabase/functions/recipe-generator/index.ts
+          grep -q "celiac_guard_rejected" supabase/functions/recipe-generator/index.ts
+          grep -q "shopping_items" supabase/functions/recipe-generator/index.ts
+          grep -q "like('item_key','v30-%')" supabase/functions/recipe-generator/index.ts
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
