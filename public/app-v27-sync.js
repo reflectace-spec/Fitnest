@@ -42,7 +42,7 @@ async function hydrate(session){
       for(const r of checks.data||[])comp[r.checkin_date]={...(comp[r.checkin_date]||{}),steps:+(r.steps||0),water:+(r.water_l||0),...(r.sleep_hours==null?{}:{sleep:+r.sleep_hours}),...(r.energy==null?{}:{energy:+r.energy})};
       for(const r of sessions.data||[])if(r.planned_date)comp[r.planned_date]={...(comp[r.planned_date]||{}),training:true};
       changed=writeChanged(K.completed,comp)||changed;
-      const wp=(wplans.data||[]).find(x=>String(x.generation_version||'').startsWith('openai'))||(wplans.data||[])[0];if(wp?.plan)changed=writeChanged(K.train,{...wp.plan,weekStart:wp.week_start})||changed;
+      const today=new Date().toISOString().slice(0,10),wp=(wplans.data||[]).find(x=>x.week_start<=today&&String(x.generation_version||'').startsWith('openai'))||(wplans.data||[]).find(x=>x.week_start<=today)||(wplans.data||[])[0];if(wp?.plan)changed=writeChanged(K.train,{...wp.plan,weekStart:wp.week_start})||changed;
       const nps=(nprofiles.data||[]).map(nutrition);
       if(nps.length){changed=writeChanged(K.profiles,nps)||changed;const active=nps.find(x=>x.isActive)||nps[0];if(localStorage.getItem(K.active)!==active.id){localStorage.setItem(K.active,active.id);changed=true}changed=writeChanged(K.celiac,Object.fromEntries(nps.map(x=>[x.id,!!x.glutenFreeCeliac])))||changed}
       const plans={};for(const r of (mplans.data||[]).slice().reverse())plans[r.plan_date]={date:r.plan_date,profileId:r.nutrition_profile_id,profileName:nps.find(x=>x.id===r.nutrition_profile_id)?.name||'Standard',meals:r.meals||[],generatedAt:r.created_at,source:'cloud'};changed=writeChanged(K.plans,plans)||changed;
