@@ -1,0 +1,56 @@
+name: Fitnest Build 3.5 PWA premium checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build35:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check browser module syntax
+        run: node --input-type=module --check < public/app-v35-pwa.js
+
+      - name: Verify app shell integration
+        run: |
+          grep -q "app-v35-pwa.js" public/app.js
+          grep -q "build35.css" public/index.html
+          grep -q "app-v35-pwa.js" public/sw.js
+          grep -q "build35.css" public/sw.js
+          grep -q "fitnest-shell-v3-5-0" public/sw.js
+
+      - name: Verify install and update flows
+        run: |
+          grep -q "beforeinstallprompt" public/app-v35-pwa.js
+          grep -q "appinstalled" public/app-v35-pwa.js
+          grep -q "updatefound" public/app-v35-pwa.js
+          grep -q "SKIP_WAITING" public/app-v35-pwa.js
+          grep -q "data-v35-center-open" public/app-v35-pwa.js
+          grep -q "Zum Home Bildschirm" public/app-v35-pwa.js
+
+      - name: Verify manifest and icons
+        run: |
+          python3 -m json.tool public/manifest.webmanifest >/dev/null
+          test -f public/assets/icon-180.png
+          test -f public/assets/icon-192.png
+          test -f public/assets/icon-512.png
+          grep -q '"shortcuts"' public/manifest.webmanifest
+          grep -q 'apple-touch-icon' public/index.html
+
+      - name: Verify offline lifecycle
+        run: |
+          grep -q "addEventListener('message'" public/sw.js
+          grep -q "event.data?.type==='SKIP_WAITING'" public/sw.js
+          grep -q "navigator.onLine" public/app-v35-pwa.js
+          grep -q "navigator.storage" public/app-v35-pwa.js
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
