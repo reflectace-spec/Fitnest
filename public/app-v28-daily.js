@@ -276,6 +276,14 @@ function startTraining(){
   location.reload();
 }
 
+document.addEventListener('fitnest:v28-adherence-saved',event=>{
+  const value=event.detail;
+  if(!value?.activity_date||!value?.item_type||!value?.item_key)return;
+  state[itemId(value.activity_date,value.item_type,value.item_key)]={...value,updated_at:value.updated_at||new Date().toISOString()};
+  write(localKey(),state);
+  render();
+});
+
 function feedbackDialog(date,key){
   const current=entry(date,'training',key);
   const overlay=document.createElement('div');
