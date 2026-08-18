@@ -27,3 +27,4 @@ import './app-v31-shopping.js';
 import './app-v32-recipes.js';
 import './app-v33-workout.js';
 import './app-v34-progress.js';
+import './app-v35-pwa.js';

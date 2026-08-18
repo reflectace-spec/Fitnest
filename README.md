@@ -38,7 +38,7 @@ Dann `http://localhost:8080` öffnen.
 2. Initialmigration `build_1_initial_schema` ist angewendet.
 3. `public/config.js` nutzt Projekt URL und Publishable Key.
 4. Edge Functions `generate-plan` und `push-dispatch` sind mit JWT Prüfung deployed.
-5. Offen: Google Provider und finale Redirect URLs nach dem ersten Cloudflare Deployment konfigurieren.
+5. Google Login und die finale Cloudflare Redirect URL sind produktiv konfiguriert.
 
 Keine `service_role` oder Secret Keys in `public/config.js` eintragen.
 
@@ -52,16 +52,9 @@ npx wrangler deploy
 
 Die aktuelle Cloudflare Dokumentation empfiehlt Workers Static Assets für neue statische bzw. Full-Stack Worker Anwendungen.
 
-## Push
+## Push und Installation
 
-Build 1 enthält den PWA Client, Service Worker und die serverseitige `push-dispatch` Edge Function. Für echte Benachrichtigungen bei geschlossenem Browser fehlen noch:
-
-- VAPID Schlüsselpaar
-- sichere Registrierung der Push Subscription im Fitnest Supabase Projekt
-- serverseitiger Web Push Versand
-- Scheduler für Trainings-, Wiege- und Tageserinnerungen
-
-Diese Punkte sind für Build 2 vorgesehen, sobald das eigene Supabase Projekt und der permanente Cloudflare Zielaccount verbunden sind.
+Serverseitiger Web Push, VAPID, Geräteverwaltung und der Scheduler für Trainings-, Wiege- und Tageserinnerungen sind produktiv eingerichtet. Build 3.5 ergänzt Installation, Update Hinweise, Offline Status, App Shortcuts und eine Geräteübersicht. Auf iPhone und iPad muss Fitnest über Safari zum Home Bildschirm hinzugefügt werden, bevor Hintergrund Push aktiviert werden kann.
 
 ## Rechtliches
 

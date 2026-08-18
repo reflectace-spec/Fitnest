@@ -3,13 +3,27 @@
   "name": "Fitnest",
   "short_name": "Fitnest",
   "description": "Persönlicher Trainings- und Ernährungsbegleiter",
+  "lang": "de",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0a0b10",
   "theme_color": "#0a0b10",
   "orientation": "portrait-primary",
+  "categories": ["fitness", "health", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
-    {"src":"./assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
+    {"src":"./assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"},
+    {"src":"./assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ],
+  "shortcuts": [
+    {"name":"Heute","short_name":"Heute","url":"./?view=today","icons":[{"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png"}]},
+    {"name":"Training","short_name":"Training","url":"./?view=plan","icons":[{"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png"}]},
+    {"name":"Fortschritt","short_name":"Fortschritt","url":"./?view=progress","icons":[{"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png"}]}
   ]
 }
