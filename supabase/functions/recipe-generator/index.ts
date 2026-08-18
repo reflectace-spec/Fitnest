@@ -35,18 +35,42 @@ async function mealSignals(db:any,userId:string,startDate:string){
   };
 }
 
+type ShoppingAggregate={name:string;units:Map<string,number>;texts:Set<string>;cost:number};
+function addAmount(target:ShoppingAggregate,raw:string){
+  const value=String(raw||'').trim().slice(0,80),match=value.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|stück|stk|dose|dosen|packung|packungen|bund|el|tl)?$/i);
+  if(!match){if(value)target.texts.add(value);return}
+  let amount=Number(match[1].replace(',','.')),unit=String(match[2]||'Stück').toLowerCase();
+  if(unit==='kg'){amount*=1000;unit='g'}
+  if(unit==='l'){amount*=1000;unit='ml'}
+  if(unit==='stk')unit='stück';
+  if(unit==='dosen')unit='dose';
+  if(unit==='packungen')unit='packung';
+  target.units.set(unit,(target.units.get(unit)||0)+amount);
+}
+function formatAmountValue(value:number,unit:string){
+  let amount=value,label=unit;
+  if(unit==='g'&&value>=1000){amount=value/1000;label='kg'}
+  if(unit==='ml'&&value>=1000){amount=value/1000;label='l'}
+  const number=new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(amount);
+  const labels:{[key:string]:string}={stück:'Stück',dose:value===1?'Dose':'Dosen',packung:value===1?'Packung':'Packungen',bund:'Bund',el:'EL',tl:'TL'};
+  return`${number} ${labels[label]||label}`;
+}
+function formatAmounts(value:ShoppingAggregate){
+  return[...[...value.units.entries()].map(([unit,amount])=>formatAmountValue(amount,unit)),...value.texts].slice(0,8).join(' + ').slice(0,500);
+}
 function shoppingRows(userId:string,weekStart:string,profileId:string,plans:any[]){
-  const grouped=new Map<string,{name:string,amounts:string[]}>();
-  for(const day of plans)for(const meal of day.meals||[])for(const ingredient of meal.ingredients||[]){
-    const name=String(ingredient?.[0]||'').trim().slice(0,100),amount=String(ingredient?.[1]||'').trim().slice(0,80);
-    if(!name)continue;
-    const normalized=name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
-    if(!normalized)continue;
-    const current=grouped.get(normalized)||{name,amounts:[]};
-    if(amount&&!current.amounts.includes(amount))current.amounts.push(amount);
-    grouped.set(normalized,current);
+  const grouped=new Map<string,ShoppingAggregate>();
+  for(const day of plans)for(const meal of day.meals||[]){
+    const ingredients=(meal.ingredients||[]).filter((ingredient:any)=>String(ingredient?.[0]||'').trim()),share=ingredients.length?Math.max(0,Number(meal.cost)||0)/ingredients.length:0;
+    for(const ingredient of ingredients){
+      const name=String(ingredient?.[0]||'').trim().slice(0,100),amount=String(ingredient?.[1]||'').trim().slice(0,80);
+      const normalized=name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
+      if(!normalized)continue;
+      const current=grouped.get(normalized)||{name,units:new Map<string,number>(),texts:new Set<string>(),cost:0};
+      addAmount(current,amount);current.cost+=share;grouped.set(normalized,current);
+    }
   }
-  return[...grouped.entries()].slice(0,180).map(([key,value])=>({user_id:userId,week_start:weekStart,item_key:`v30-${key}`,item_name:value.name,amount_text:value.amounts.slice(0,7).join(' + ').slice(0,500),checked:false,nutrition_profile_id:profileId,updated_at:new Date().toISOString()}));
+  return[...grouped.entries()].slice(0,180).map(([key,value])=>({user_id:userId,week_start:weekStart,item_key:`v30-${key}`,item_name:value.name,amount_text:formatAmounts(value),checked:false,estimated_cost_eur:+value.cost.toFixed(2),nutrition_profile_id:profileId,updated_at:new Date().toISOString()}));
 }
 
 async function acceptPlans(db:any,userId:string,body:any){
