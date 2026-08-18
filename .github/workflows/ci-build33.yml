@@ -28,7 +28,8 @@ jobs:
 
       - name: Verify guided workout flow
         run: |
-          grep -q "__fitnestV33Workout" public/app-v2.js
+          grep -q "new MutationObserver" public/app-v33-workout.js
+          grep -q "workout-session-list" public/app-v33-workout.js
           grep -q "data-v33-complete" public/app-v33-workout.js
           grep -q "data-v33-rest-clock" public/app-v33-workout.js
           grep -q "data-v33-finish" public/app-v33-workout.js
@@ -38,6 +39,8 @@ jobs:
       - name: Verify persistence and adaptive feedback
         run: |
           grep -q "fitnest.workoutUi.v33" public/app-v33-workout.js
+          grep -q "workout_sessions" public/app-v33-workout.js
+          grep -q "workout_set_logs" public/app-v33-workout.js
           grep -q "daily_adherence" public/app-v33-workout.js
           grep -q "onConflict:'user_id,activity_date,item_type,item_key'" public/app-v33-workout.js
           grep -q "fitnest:v28-adherence-saved" public/app-v28-daily.js
