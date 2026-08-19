@@ -8,7 +8,7 @@ const JSON_HEADERS = { "Content-Type": "application/json", "Access-Control-Allow
 type Prefs = {
   training_enabled: boolean; training_time: string; training_weekdays: number[];
   weigh_enabled: boolean; weigh_time: string; weigh_weekdays: number[];
-  water_enabled: boolean; water_time: string;
+  water_enabled: boolean; water_time: string; water_start_time: string; water_end_time: string; water_interval_minutes: number; water_weekdays: number[];
   steps_enabled: boolean; steps_time: string;
   evening_enabled: boolean; evening_time: string;
   quiet_start: string; quiet_end: string;
@@ -17,7 +17,7 @@ type Prefs = {
 const defaults: Prefs = {
   training_enabled: true, training_time: "18:00", training_weekdays: [1,3,5],
   weigh_enabled: true, weigh_time: "08:00", weigh_weekdays: [1,5],
-  water_enabled: true, water_time: "14:00",
+  water_enabled: true, water_time: "09:00", water_start_time: "09:00", water_end_time: "20:00", water_interval_minutes: 120, water_weekdays: [1,2,3,4,5,6,7],
   steps_enabled: true, steps_time: "19:30",
   evening_enabled: true, evening_time: "21:00",
   quiet_start: "22:00", quiet_end: "07:00"
@@ -37,11 +37,17 @@ async function sha256(value: string) {
 function validUuid(v: unknown) { return typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v); }
 function safeTime(v: unknown, fallback: string) { return typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : fallback; }
 function safeDays(v: unknown, fallback: number[]) { const a = Array.isArray(v) ? [...new Set(v.map(Number).filter(n => n >= 1 && n <= 7))] : []; return a.length ? a : fallback; }
+function safeInterval(v: unknown) { const value=Math.round(Number(v)); return Number.isFinite(value) ? Math.max(30,Math.min(240,value)) : defaults.water_interval_minutes; }
 function cleanPrefs(raw: any = {}): Prefs {
   return {
     training_enabled: raw.training_enabled !== false, training_time: safeTime(raw.training_time, defaults.training_time), training_weekdays: safeDays(raw.training_weekdays, defaults.training_weekdays),
     weigh_enabled: raw.weigh_enabled !== false, weigh_time: safeTime(raw.weigh_time, defaults.weigh_time), weigh_weekdays: safeDays(raw.weigh_weekdays, defaults.weigh_weekdays),
-    water_enabled: raw.water_enabled !== false, water_time: safeTime(raw.water_time, defaults.water_time),
+    water_enabled: raw.water_enabled !== false,
+    water_time: safeTime(raw.water_start_time||raw.water_time, defaults.water_time),
+    water_start_time: safeTime(raw.water_start_time||raw.water_time, defaults.water_start_time),
+    water_end_time: safeTime(raw.water_end_time, defaults.water_end_time),
+    water_interval_minutes: safeInterval(raw.water_interval_minutes),
+    water_weekdays: safeDays(raw.water_weekdays, defaults.water_weekdays),
     steps_enabled: raw.steps_enabled !== false, steps_time: safeTime(raw.steps_time, defaults.steps_time),
     evening_enabled: raw.evening_enabled !== false, evening_time: safeTime(raw.evening_time, defaults.evening_time),
     quiet_start: safeTime(raw.quiet_start, defaults.quiet_start), quiet_end: safeTime(raw.quiet_end, defaults.quiet_end)
@@ -78,6 +84,12 @@ function toMinutes(t: string) { const [h,m]=String(t).slice(0,5).split(":").map(
 function due(nowMin: number, t: string) { const d=Math.abs(nowMin-toMinutes(t)); return Math.min(d,1440-d)<=5; }
 function quiet(nowMin:number,start:string,end:string){const a=toMinutes(start),b=toMinutes(end);return a<=b?nowMin>=a&&nowMin<b:nowMin>=a||nowMin<b;}
 function slotTime(t:string){return `${String(t).slice(0,5)}:00`;}
+function recurringSlots(start:string,end:string,interval:number){
+  const first=toMinutes(start),rawEnd=toMinutes(end),last=rawEnd<=first?rawEnd+1440:rawEnd,step=Math.max(30,Math.min(240,interval));
+  const slots:string[]=[];
+  for(let value=first;value<=last&&slots.length<49;value+=step)slots.push(`${String(Math.floor((value%1440)/60)).padStart(2,"0")}:${String(value%60).padStart(2,"0")}`);
+  return slots;
+}
 
 async function sendPush(device: any, cfg: any, payload: any) {
   try {
@@ -127,15 +139,17 @@ async function disable(admin:any, body:any) {
   await admin.from("push_devices").update({enabled:false,updated_at:new Date().toISOString()}).eq("device_id",device.device_id); return response({ok:true});
 }
 
-async function userState(admin:any,userId:string,date:string){
-  const [w,b,c,p,m]=await Promise.all([
+async function userState(admin:any,userId:string,date:string,weekday:number){
+  const [w,b,c,p,m,wp]=await Promise.all([
     admin.from("workout_sessions").select("id").eq("user_id",userId).eq("planned_date",date).eq("completed",true).limit(1),
     admin.from("body_metrics").select("weight_kg").eq("user_id",userId).eq("measured_on",date).limit(1),
     admin.from("daily_checkins").select("steps,water_l").eq("user_id",userId).eq("checkin_date",date).maybeSingle(),
     admin.from("profiles").select("step_goal,water_goal_l").eq("user_id",userId).maybeSingle(),
-    admin.from("meal_logs").select("id").eq("user_id",userId).eq("eaten_on",date)
+    admin.from("meal_logs").select("id").eq("user_id",userId).eq("eaten_on",date),
+    admin.from("workout_plans").select("plan,week_start").eq("user_id",userId).lte("week_start",date).order("week_start",{ascending:false}).limit(1).maybeSingle()
   ]);
-  return { workoutDone:!!w.data?.length, weightDone:!!b.data?.length, steps:Number(c.data?.steps||0), water:Number(c.data?.water_l||0), stepGoal:Number(p.data?.step_goal||8000), waterGoal:Number(p.data?.water_goal_l||2.5), meals:Number(m.data?.length||0) };
+  const planned=(wp.data?.plan?.sessions||[]).find((item:any)=>Number(item.dayIndex)===weekday-1);
+  return { workoutDone:!!w.data?.length, weightDone:!!b.data?.length, steps:Number(c.data?.steps||0), water:Number(c.data?.water_l||0), stepGoal:Number(p.data?.step_goal||8000), waterGoal:Number(p.data?.water_goal_l||2.5), meals:Number(m.data?.length||0), hasPlannedTraining:!!planned, plannedTrainingTime:planned?.suggestedTime||null, plannedTrainingTitle:planned?.title||"Training" };
 }
 
 async function schedule(admin:any, req:Request) {
@@ -145,11 +159,13 @@ async function schedule(admin:any, req:Request) {
   let sentCount=0,checked=0;
   for(const device of devices){
     const pref={...defaults,...(prefMap.get(device.device_id)||{})} as Prefs; const lp=localParts(new Date(),device.timezone||"Europe/Berlin"); if(quiet(lp.minutes,pref.quiet_start,pref.quiet_end))continue;
-    const state=device.user_id?await userState(admin,device.user_id,lp.date):null;
+    const state=device.user_id?await userState(admin,device.user_id,lp.date,lp.weekday):null;
     const candidates:any[]=[];
-    if(pref.training_enabled&&pref.training_weekdays.includes(lp.weekday)&&due(lp.minutes,pref.training_time)&&!state?.workoutDone)candidates.push(["training",pref.training_time,"Training wartet",state?"Dein Training für heute ist noch offen.":"Dein geplantes Training wartet."]);
+    const trainingTime=state?.plannedTrainingTime||pref.training_time;
+    const trainingPlanned=state?state.hasPlannedTraining:pref.training_weekdays.includes(lp.weekday);
+    if(pref.training_enabled&&trainingPlanned&&due(lp.minutes,trainingTime)&&!state?.workoutDone)candidates.push(["training",trainingTime,"Training wartet",state?`${state.plannedTrainingTitle} ist für jetzt eingeplant.`:"Dein geplantes Training wartet."]);
     if(pref.weigh_enabled&&pref.weigh_weekdays.includes(lp.weekday)&&due(lp.minutes,pref.weigh_time)&&!state?.weightDone)candidates.push(["weigh",pref.weigh_time,"Kurzer Check-in","Gewicht eintragen und den Trend aktuell halten."]);
-    if(pref.water_enabled&&due(lp.minutes,pref.water_time)&&(!state||state.water<state.waterGoal))candidates.push(["water",pref.water_time,"Wasser-Check",state?`${state.water.toFixed(1)} von ${state.waterGoal.toFixed(1)} l erfasst.`:"Kurzer Wasser-Check für heute."]);
+    if(pref.water_enabled&&pref.water_weekdays.includes(lp.weekday)&&(!state||state.water<state.waterGoal))for(const waterTime of recurringSlots(pref.water_start_time,pref.water_end_time,pref.water_interval_minutes))if(due(lp.minutes,waterTime))candidates.push(["water",waterTime,"Wasser-Check",state?`${state.water.toFixed(1)} von ${state.waterGoal.toFixed(1)} l erfasst.`:"Kurzer Wasser-Check für heute."]);
     if(pref.steps_enabled&&due(lp.minutes,pref.steps_time)&&(!state||state.steps<state.stepGoal))candidates.push(["steps",pref.steps_time,"Schrittziel",state?`${state.steps.toLocaleString("de-DE")} von ${state.stepGoal.toLocaleString("de-DE")} Schritten.`:"Schrittziel für heute kurz prüfen."]);
     if(pref.evening_enabled&&due(lp.minutes,pref.evening_time))candidates.push(["evening",pref.evening_time,"Tagescheck",state?`Training ${state.workoutDone?"✓":"offen"} · ${state.meals} Mahlzeiten geloggt.`:"Schritte, Wasser und Essen kurz abschließen."]);
     for(const [type,time,title,body] of candidates){checked++; const scheduled=slotTime(time); const {data:existing}=await admin.from("push_delivery_log").select("status").eq("device_id",device.device_id).eq("reminder_type",type).eq("local_date",lp.date).eq("scheduled_time",scheduled).maybeSingle(); if(existing?.status==="sent")continue;

@@ -1,0 +1,71 @@
+name: Fitnest Build 3.8 work and reminder checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build38:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check browser and Edge Function syntax
+        run: |
+          node --input-type=module --check < public/app-v38-work-schedule.js
+          node --check public/app-v23-addon.js
+          deno check supabase/functions/generate-plan/index.ts
+          deno check supabase/functions/adaptive-week/index.ts
+          deno check supabase/functions/push-dispatch/index.ts
+
+      - name: Test work-aware schedule rules
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          let source=fs.readFileSync('public/app-v38-work-schedule.js','utf8')
+            .replace("import { getSupabaseClient } from './app-supabase.js';","const getSupabaseClient=async()=>null;")
+            .replace(/document\.addEventListener[\s\S]*$/,'');
+          const module=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+          const work=module.normalizeWorkSchedule([
+            {weekday:1,is_workday:true,start_time:'09:00',end_time:'17:00'},
+            {weekday:2,is_workday:true,start_time:'13:00',end_time:'22:00'}
+          ]);
+          if(module.suggestedTrainingTime(work[0],30)!=='18:00')throw new Error('After-work slot failed');
+          if(module.suggestedTrainingTime(work[1],30)!=='11:45')throw new Error('Before-work slot failed');
+          const plan=module.adaptPlanToWorkSchedule({sessions:[{dayIndex:0,minutes:30,exercises:[]},{dayIndex:1,minutes:30,exercises:[]}]},work);
+          if(plan.sessions.length!==2||!plan.sessions.every(item=>item.suggestedTime&&item.workdayAdjusted))throw new Error('Plan adaptation failed');
+          console.log('Build 3.8 schedule rules: OK');
+          NODE
+
+      - name: Verify app shell and reminder integration
+        run: |
+          grep -q "app-v38-work-schedule.js" public/app.js
+          grep -q "build38.css" public/index.html
+          grep -q "app-v38-work-schedule.js" public/sw.js
+          grep -q "build38.css" public/sw.js
+          grep -q "fitnest-shell-v3-8-0" public/sw.js
+          grep -q "water_interval_minutes" public/app-v23-addon.js
+          grep -q "recurringSlots" supabase/functions/push-dispatch/index.ts
+          grep -q "plannedTrainingTime" supabase/functions/push-dispatch/index.ts
+
+      - name: Verify migration and RLS ownership
+        run: |
+          test -s supabase/migrations/0018_work_schedule_and_water_cadence.sql
+          grep -q "alter table public.work_schedules enable row level security" supabase/migrations/0018_work_schedule_and_water_cadence.sql
+          grep -q "with check ((select auth.uid()) = user_id)" supabase/migrations/0018_work_schedule_and_water_cadence.sql
+          grep -q "water_interval_minutes between 30 and 240" supabase/migrations/0018_work_schedule_and_water_cadence.sql
+          grep -q "work_schedules" supabase/functions/generate-plan/index.ts
+          grep -q "work_schedules" supabase/functions/adaptive-week/index.ts
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
