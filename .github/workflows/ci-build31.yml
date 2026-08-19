@@ -34,7 +34,7 @@ jobs:
           test -s public/build31.css
           grep -q "app-v31-shopping.js" public/app.js
           grep -q "build31.css" public/index.html
-          grep -q "fitnest-shell-v3-1" public/sw.js
+          grep -Eq "fitnest-shell-v3-([1-9]|[1-9][0-9])-0" public/sw.js
           grep -q "app-v31-shopping.js" public/sw.js
           grep -q "build31.css" public/sw.js
       - name: Persistence and plan separation

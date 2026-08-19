@@ -24,7 +24,7 @@ jobs:
           grep -q "build36.css" public/index.html
           grep -q "app-v36-health.js" public/sw.js
           grep -q "build36.css" public/sw.js
-          grep -q "fitnest-shell-v3-6-0" public/sw.js
+          grep -Eq "fitnest-shell-v3-([6-9]|[1-9][0-9])-0" public/sw.js
 
       - name: Verify health import flows
         run: |

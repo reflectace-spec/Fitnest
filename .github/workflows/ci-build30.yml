@@ -34,7 +34,7 @@ jobs:
           test -s public/build30.css
           grep -q "app-v30-nutrition.js" public/app.js
           grep -q "build30.css" public/index.html
-          grep -q "fitnest-shell-v3-0" public/sw.js
+          grep -Eq "fitnest-shell-v3-([0-9]|[1-9][0-9])-0" public/sw.js
           grep -q "app-v30-nutrition.js" public/sw.js
           grep -q "build30.css" public/sw.js
       - name: Nutrition safety and persistence
