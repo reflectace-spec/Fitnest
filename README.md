@@ -94,6 +94,12 @@ Build 3.8 verbindet den bestehenden Trainingsplan und die Push-Infrastruktur mit
 - serverseitige Web-Pushs bei geschlossener App auf Desktop und Android
 - Hintergrund-Push auf iPhone und iPad über die installierte Home-Screen-App
 
+## App-Gefühl und Tutorial
+
+Build 3.8.1 fixiert Einstellungsdialoge als echte App-Layer. Der Hintergrund und horizontale sowie Mehrfinger-Gesten bleiben gesperrt, während der Inhalt kontrolliert vertikal scrollt.
+
+Nach der Ersteinrichtung erklärt ein siebenteiliges Tutorial die Bereiche Heute, Plan, Essen, Coach, Übungen und Fortschritt sowie Arbeitszeiten und Push-Einstellungen. „Nicht erneut anzeigen“ speichert die Entscheidung auf dem jeweiligen Gerät. Über die Einstellungen lässt sich das Tutorial jederzeit wieder öffnen.
+
 ## Nächste Builds
 
 1. Build 3.9: native App Grundlage für iOS und Android
