@@ -54,6 +54,7 @@ async function loadContext(db:any,userId:string,weekStart:string){
     db.from("workout_plans").select("week_start,plan,generation_version").eq("user_id",userId).lte("week_start",weekStart).order("week_start",{ascending:false}).limit(1).maybeSingle(),
     db.from("body_metrics").select("measured_on,weight_kg").eq("user_id",userId).gte("measured_on",weightFrom).order("measured_on",{ascending:true}),
     db.from("nutrition_profiles").select("calories,protein_g,eating_pattern,meals_per_day,diet_style").eq("user_id",userId).eq("is_active",true).maybeSingle(),
+    db.from("work_schedules").select("weekday,is_workday,start_time,end_time").eq("user_id",userId).order("weekday"),
     db.from("weekly_reviews").select("*").eq("user_id",userId).eq("week_start",weekStart).maybeSingle(),
   ]);
   const error=results.map(result=>result.error).find(Boolean);
@@ -68,7 +69,8 @@ async function loadContext(db:any,userId:string,weekStart:string){
     workoutPlan:results[4].data,
     weights:results[5].data||[],
     nutrition:results[6].data,
-    existing:results[7].data,
+    workSchedule:results[7].data||[],
+    existing:results[8].data,
   };
 }
 
@@ -147,11 +149,15 @@ function adjustedTarget(exercise:any,percent:number){
   if(next===original)next=original+(percent>0?(seconds?5:1):(seconds?-5:-1));
   return clamp(next,seconds?10:4,seconds?90:40);
 }
+function timeMinutes(value:string){const [hours,minutes]=String(value||"00:00").slice(0,5).split(":").map(Number);return hours*60+minutes}
+function clock(value:number){const next=((value%1440)+1440)%1440;return `${String(Math.floor(next/60)).padStart(2,"0")}:${String(next%60).padStart(2,"0")}`}
+function trainingTime(row:any,duration:number){if(!row?.is_workday)return"10:00";const start=timeMinutes(row.start_time),end=timeMinutes(row.end_time),minutes=Math.max(15,Number(duration)||30);if(start>end)return"10:00";if(end+60+minutes<=21*60+30)return clock(end+60);if(start-minutes-45>=6*60)return clock(start-minutes-45);return null}
+function applyWorkSchedule(sessions:any[],rows:any[]){if(!rows?.length)return sessions;const schedule=Array.from({length:7},(_,index)=>rows.find(row=>Number(row.weekday)===index+1)||{weekday:index+1,is_workday:false,start_time:"09:00",end_time:"17:00"}),used=new Set<number>();return sessions.map((session,index)=>{let day=Number(session.dayIndex)||0,time=trainingTime(schedule[day],session.minutes);if(!time){const replacement=[1,-1,2,-2,3,-3,4,-4,5,-5,6,-6].map(offset=>(day+offset+7)%7).find(candidate=>!used.has(candidate)&&!schedule[candidate].is_workday);if(replacement!==undefined)day=replacement;time=trainingTime(schedule[day],session.minutes)||"10:00"}if(used.has(day)){const replacement=[0,1,2,3,4,5,6].find(candidate=>!used.has(candidate)&&trainingTime(schedule[candidate],session.minutes));if(replacement!==undefined){day=replacement;time=trainingTime(schedule[day],session.minutes)||"10:00"}}used.add(day);return{...session,dayIndex:day,suggestedTime:time,workdayAdjusted:true,sequence:index+1}}).sort((a,b)=>a.dayIndex-b.dayIndex)}
 
 function proposedPlan(context:any,base:any,copy:any,source:string,model:string|null){
   const current=context.workoutPlan?.plan;
   if(!current?.sessions?.length)throw new Error("no_training_plan");
-  const sessions=current.sessions.map((session:any)=>({
+  const sessions=applyWorkSchedule(current.sessions.map((session:any)=>({
     ...session,
     minutes:clamp(Math.round(Number(session.minutes||30)*(1+base.volumePercent/100)),15,60),
     exercises:(session.exercises||[]).map((exercise:any)=>({
@@ -159,7 +165,7 @@ function proposedPlan(context:any,base:any,copy:any,source:string,model:string|n
       target:adjustedTarget(exercise,base.volumePercent),
       rpeTarget:clamp(Number(exercise.rpeTarget||7)+base.rpeDelta,5,8),
     }))
-  }));
+  })),context.workSchedule);
   return{
     ...current,
     source:source==="openai"?"openai-adaptive":"rules-adaptive",
@@ -168,6 +174,7 @@ function proposedPlan(context:any,base:any,copy:any,source:string,model:string|n
     coachNote:`Build 2.9: ${copy.summary}`,
     adaptedFromWeek:context.weekStart,
     generatedAt:new Date().toISOString(),
+    scheduleSource:context.workSchedule?.length?"work-schedule-v3.8":current.scheduleSource,
   };
 }
 

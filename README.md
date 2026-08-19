@@ -81,12 +81,25 @@ Build 3.7 verbindet Schlaf, Energie, Schritte, Wasser, Gewichtstrend und Trainin
 - eigene erweiterte Einwilligung vor der Übertragung von Gesundheitsdaten an die KI
 - serverseitige Absicherung der Einwilligung über die Version `3.7-health-signals`
 
+## Arbeitszeiten und Trink-Erinnerungen
+
+Build 3.8 verbindet den bestehenden Trainingsplan und die Push-Infrastruktur mit dem realen Alltag:
+
+- Arbeitszeiten pro Wochentag mit Start und Ende
+- automatische Trainingszeit außerhalb der Arbeitszeit
+- Verschiebung auf einen geeigneten freien Tag, wenn vor oder nach der Arbeit kein sinnvoller Slot bleibt
+- Anzeige der vorgeschlagenen Uhrzeit direkt im Trainingsplan
+- frei einstellbarer Wasser-Zeitraum und Intervall von 30 Minuten bis 4 Stunden
+- Wasser-Erinnerungen nur an ausgewählten Tagen und nur solange das Tagesziel offen ist
+- serverseitige Web-Pushs bei geschlossener App auf Desktop und Android
+- Hintergrund-Push auf iPhone und iPad über die installierte Home-Screen-App
+
 ## Nächste Builds
 
-1. Build 3.8: native App Grundlage für iOS und Android
-2. Build 3.9: Apple HealthKit und Android Health Connect Synchronisierung
-3. Build 4.0: Qualitäts-, Datenschutz- und Store Readiness
-4. Build 4.1: TestFlight und Google Play Closed Beta
+1. Build 3.9: native App Grundlage für iOS und Android
+2. Build 4.0: Apple HealthKit und Android Health Connect Synchronisierung
+3. Build 4.1: Qualitäts-, Datenschutz- und Store Readiness
+4. Build 4.2: TestFlight und Google Play Closed Beta
 
 ## Rechtliches
 
