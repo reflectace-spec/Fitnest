@@ -52,7 +52,7 @@ jobs:
           grep -q "build38.css" public/index.html
           grep -q "app-v38-work-schedule.js" public/sw.js
           grep -q "build38.css" public/sw.js
-          grep -q "fitnest-shell-v3-8-0" public/sw.js
+          grep -Eq "fitnest-shell-v3-([89]|[1-9][0-9])-[0-9]+" public/sw.js
           grep -q "water_interval_minutes" public/app-v23-addon.js
           grep -q "recurringSlots" supabase/functions/push-dispatch/index.ts
           grep -q "plannedTrainingTime" supabase/functions/push-dispatch/index.ts

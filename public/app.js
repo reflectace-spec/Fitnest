@@ -31,3 +31,4 @@ import './app-v35-pwa.js';
 import './app-v36-health.js';
 import './app-v37-coach.js';
 import './app-v38-work-schedule.js';
+import './app-v381-tutorial.js';

@@ -31,7 +31,7 @@ jobs:
           grep -q "build37.css" public/index.html
           grep -q "app-v37-coach.js" public/sw.js
           grep -q "build37.css" public/sw.js
-          grep -q "fitnest-shell-v3-7-0" public/sw.js
+          grep -Eq "fitnest-shell-v3-([7-9]|[1-9][0-9])-[0-9]+" public/sw.js
 
       - name: Test coach signal rules
         run: |

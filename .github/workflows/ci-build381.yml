@@ -1,0 +1,44 @@
+name: Fitnest Build 3.8.1 tutorial and app surface checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build381:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tutorial module syntax
+        run: |
+          node --input-type=module --check < public/app-v381-tutorial.js
+          node tests/build381.test.mjs
+
+      - name: Verify fixed sheet behavior
+        run: |
+          grep -q "shouldPreventSheetTouch" public/app-v381-tutorial.js
+          grep -q "gesturestart" public/app-v381-tutorial.js
+          grep -q "touch-action:pan-y" public/build381.css
+          grep -q "overscroll-behavior-y:contain" public/build381.css
+          grep -q "v381-modal-lock" public/build381.css
+
+      - name: Verify tutorial behavior and app shell
+        run: |
+          grep -q "Nicht erneut anzeigen" public/app-v381-tutorial.js
+          grep -q "App-Tutorial öffnen" public/app-v381-tutorial.js
+          grep -q "fitnest.tutorial.dismissed.v381" public/app-v381-tutorial.js
+          grep -q "app-v381-tutorial.js" public/app.js
+          grep -q "build381.css" public/index.html
+          grep -q "app-v381-tutorial.js" public/sw.js
+          grep -q "build381.css" public/sw.js
+          grep -q "fitnest-shell-v3-8-1" public/sw.js
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
