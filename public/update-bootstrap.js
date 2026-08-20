@@ -1,5 +1,5 @@
 (function(){
-  const BUILD='3.8.4';
+  const BUILD='3.8.5';
   const RELOAD_KEY=`fitnest.update.reload.${BUILD}`;
   let checking=false;
 

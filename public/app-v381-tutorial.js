@@ -1,4 +1,4 @@
-const BUILD='3.8.1';
+const BUILD='3.8.5';
 const DISMISSED='fitnest.tutorial.dismissed.v381';
 const SHOWN_THIS_SESSION='fitnest.tutorial.shown.v381';
 const ONBOARDING_COMPLETE='fitnest.onboarding.complete.v26';

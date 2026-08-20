@@ -1,6 +1,12 @@
-const BUILD='3.8.4';
+const BUILD='3.8.5';
 
 export const CHANGELOG=[
+  {date:'20.08.2026',version:'Build 3.8.5',title:'Festes App-Gefühl auf iPhone und iPad',changes:[
+    'Erststart, Tutorial und Dialoge lassen sich nicht mehr diagonal oder mit mehreren Fingern verschieben.',
+    'Nur vorgesehene Inhalte scrollen vertikal, während App-Hintergrund und Vollbild-Ebenen fest bleiben.',
+    'Pinch-Gesten, horizontales Seitenverschieben und iOS-Gummibandbewegungen werden zentral unterbunden.',
+    'Der Erststart und alle Versionsanzeigen weisen den aktuellen Build 3.8.5 aus.'
+  ]},
   {date:'20.08.2026',version:'Build 3.8.4',title:'Zuverlässige automatische App-Updates',changes:[
     'Neue Versionen aktivieren sich automatisch und laden die installierte App genau einmal neu.',
     'Versionsparameter verhindern, dass iPhone oder iPad veraltete JavaScript- oder CSS-Dateien weiterverwendet.',
