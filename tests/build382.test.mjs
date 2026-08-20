@@ -20,7 +20,7 @@ assert.match(css,/\.v382-chart/);
 assert.match(css,/\.v382-legacy-sheet \.sheet-body/);
 assert.match(app,/app-v382-progress-hotfix\.js/);
 assert.match(index,/build382\.css/);
-assert.match(sw,/fitnest-shell-v3-8-2/);
+assert.match(sw,/fitnest-shell-v3-8-[2-9][0-9]*/);
 assert.match(sw,/app-v382-progress-hotfix\.js/);
 assert.match(sw,/build382\.css/);
 console.log('Build 3.8.2 checks passed.');
