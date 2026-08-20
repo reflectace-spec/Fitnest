@@ -1,0 +1,34 @@
+name: Fitnest Build 3.8.5 native touch lock checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build385:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate native shell JavaScript
+        run: |
+          node --input-type=module --check < public/app-v385-native-shell.js
+          node tests/build385.test.mjs
+
+      - name: Verify fixed first start surfaces
+        run: |
+          grep -q "body.v26-onboarding-open{position:fixed" public/build385.css
+          grep -q "touch-action:none" public/build385.css
+          grep -q "touch-action:pan-y" public/build385.css
+          grep -q "gesturestart" public/app-v385-native-shell.js
+          grep -q "Number(touchCount)>1" public/app-v385-native-shell.js
+          grep -q "Build 3.8.5" public/app-v26-onboarding.js
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public

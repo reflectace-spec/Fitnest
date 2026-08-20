@@ -23,10 +23,10 @@ jobs:
 
       - name: Verify versioned shell and visible build
         run: |
-          grep -q "fitnest-shell-v3-8-4" public/sw.js
+          grep -Eq "fitnest-shell-v3-8-[4-9]" public/sw.js
           grep -q "self.skipWaiting" public/sw.js
           grep -q "client.navigate" public/sw.js
-          grep -q "app.js?v=3.8.4" public/index.html
+          grep -Eq "app.js\?v=3.8.[4-9]" public/index.html
           grep -q "Build 3.8.4" public/app-v383-changelog.js
           test ! -e .github/workflows/pages.yml
 

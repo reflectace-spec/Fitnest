@@ -106,6 +106,10 @@ Build 3.8.4 aktiviert neue Service-Worker-Versionen automatisch und lädt offene
 
 Die aktuelle Build-Nummer ist im Changelog und unter „App & Gerät“ sichtbar. Nur der Workflow `deploy-cloudflare.yml` veröffentlicht die Cloudflare-Produktion und prüft danach App-Shell, Update-Bootstrap, Changelog und Versionsdatei gegen den gemergten Stand.
 
+## Festes App-Verhalten auf Mobilgeräten
+
+Build 3.8.5 sperrt den sichtbaren App-Rahmen zentral gegen diagonales Verschieben, Pinch-Gesten, Mehrfingerbewegungen und iOS-Gummibandscrollen. Beim Erststart, im Tutorial und in Dialogen bleibt der Hintergrund fest. Nur die jeweils vorgesehenen Inhaltsbereiche können vertikal scrollen. Eingabefelder und bewusst horizontal scrollbare Listen bleiben weiterhin bedienbar.
+
 ## Nächste Builds
 
 1. Build 3.9: native App Grundlage für iOS und Android
