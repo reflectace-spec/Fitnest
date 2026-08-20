@@ -1,0 +1,33 @@
+name: Fitnest Build 3.8.2 progress hotfix checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build382:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check progress hotfix syntax
+        run: |
+          node --input-type=module --check < public/app-v382-progress-hotfix.js
+          node tests/build382.test.mjs
+
+      - name: Verify app shell wiring
+        run: |
+          grep -q "app-v382-progress-hotfix.js" public/app.js
+          grep -q "build382.css" public/index.html
+          grep -q "app-v382-progress-hotfix.js" public/sw.js
+          grep -q "build382.css" public/sw.js
+          grep -q "fitnest-shell-v3-8-2" public/sw.js
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
