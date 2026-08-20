@@ -5,7 +5,7 @@
   "description": "Persönlicher Trainings- und Ernährungsbegleiter",
   "lang": "de",
   "dir": "ltr",
-  "start_url": "./",
+  "start_url": "./?build=3.8.4",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

@@ -34,7 +34,7 @@ jobs:
           test -s public/build28.css
           grep -q "app-v28-daily.js" public/app.js
           grep -q "build28.css" public/index.html
-          grep -q "fitnest-shell-v2-" public/sw.js
+          grep -Eq "fitnest-shell-v(2|3)-" public/sw.js
           grep -q "app-v28-daily.js" public/sw.js
           grep -q "build28.css" public/sw.js
       - name: Adherence migration safety

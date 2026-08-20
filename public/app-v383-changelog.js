@@ -1,10 +1,16 @@
-const BUILD='3.8.3';
+const BUILD='3.8.4';
 
 export const CHANGELOG=[
+  {date:'20.08.2026',version:'Build 3.8.4',title:'Zuverlässige automatische App-Updates',changes:[
+    'Neue Versionen aktivieren sich automatisch und laden die installierte App genau einmal neu.',
+    'Versionsparameter verhindern, dass iPhone oder iPad veraltete JavaScript- oder CSS-Dateien weiterverwendet.',
+    'Die Build-Nummer ist in den Einstellungen, im Changelog und unter App & Gerät sichtbar.',
+    'Nur ein verifizierter Cloudflare-Workflow veröffentlicht künftig die Produktion.'
+  ]},
   {date:'20.08.2026',version:'Build 3.8.3',title:'Changelog in den Einstellungen',changes:[
     'Der vollständige Fitnest-Changelog ist direkt in den Einstellungen erreichbar.',
     'Jeder Eintrag zeigt Datum, Build-Stand, Titel und die wichtigsten Änderungen.',
-    'Der aktuelle App-Stand wird in den Einstellungen sichtbar als Build 3.8.3 ausgewiesen.'
+    'Der damalige App-Stand wurde in den Einstellungen sichtbar als Build 3.8.3 ausgewiesen.'
   ]},
   {date:'20.08.2026',version:'Build 3.8.2',title:'Gewichtsverlauf und mobile Anzeige korrigiert',changes:[
     'Der Dialog zum Eintragen des Gewichts bleibt auf schmalen iPhones vollständig innerhalb des sichtbaren App-Bereichs.',

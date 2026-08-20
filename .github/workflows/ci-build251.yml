@@ -34,4 +34,4 @@ jobs:
           grep -q "app-v251-native.js" public/app.js
           ! grep -q "^import './app-v25-addon.js'" public/app.js
           grep -q "maximum-scale=1,user-scalable=no" public/index.html
-          grep -q "fitnest-shell-v2-" public/sw.js
+          grep -Eq "fitnest-shell-v(2|3)-" public/sw.js

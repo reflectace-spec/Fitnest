@@ -1,4 +1,4 @@
-const BUILD='3.5';
+const BUILD='3.8.4';
 const DISMISSED_KEY='fitnest.pwa.installDismissed.v35';
 const S={prompt:null,registration:null,waiting:null,applying:false,storage:'Wird geprüft …',queued:false};
 

@@ -7,7 +7,7 @@ const app=fs.readFileSync('public/app.js','utf8');
 const index=fs.readFileSync('public/index.html','utf8');
 const sw=fs.readFileSync('public/sw.js','utf8');
 
-assert.match(js,/const BUILD='3\.8\.3'/);
+assert.match(js,/const BUILD='3\.8\.[3-9][0-9]*'/);
 assert.match(js,/data-v383-changelog/);
 assert.match(js,/Alle umgesetzten Änderungen mit Datum und Build-Stand/);
 assert.match(js,/Build 3\.8\.2/);
@@ -39,7 +39,7 @@ assert.match(app,/app-v383-changelog\.js/);
 assert.match(index,/build383\.css/);
 assert.match(sw,/app-v383-changelog\.js/);
 assert.match(sw,/build383\.css/);
-assert.match(sw,/fitnest-shell-v3-8-3/);
+assert.match(sw,/fitnest-shell-v3-8-[3-9][0-9]*/);
 
 const entryCount=(js.match(/version:'(?:Build|Hotfix)/g)||[]).length;
 assert.ok(entryCount>=30,`expected at least 30 changelog entries, got ${entryCount}`);

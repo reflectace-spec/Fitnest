@@ -1,0 +1,35 @@
+name: Fitnest Build 3.8.4 automatic update checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build384:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check update scripts and behavior
+        run: |
+          node --check public/update-bootstrap.js
+          node --check public/sw.js
+          node tests/build384.test.mjs
+
+      - name: Verify versioned shell and visible build
+        run: |
+          grep -q "fitnest-shell-v3-8-4" public/sw.js
+          grep -q "self.skipWaiting" public/sw.js
+          grep -q "client.navigate" public/sw.js
+          grep -q "app.js?v=3.8.4" public/index.html
+          grep -q "Build 3.8.4" public/app-v383-changelog.js
+          test ! -e .github/workflows/pages.yml
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
