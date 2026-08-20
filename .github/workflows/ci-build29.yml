@@ -38,7 +38,7 @@ jobs:
           test -s public/build29.css
           grep -q "app-v29-adaptive.js" public/app.js
           grep -q "build29.css" public/index.html
-          grep -q "fitnest-shell-v2-9" public/sw.js
+          grep -Eq "fitnest-shell-v(2-9|3-)" public/sw.js
           grep -q "app-v29-adaptive.js" public/sw.js
           grep -q "build29.css" public/sw.js
           grep -q "x.week_start<=today" public/app-v27-sync.js
