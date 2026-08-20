@@ -33,3 +33,4 @@ import './app-v37-coach.js';
 import './app-v38-work-schedule.js';
 import './app-v381-tutorial.js';
 import './app-v382-progress-hotfix.js';
+import './app-v383-changelog.js';
