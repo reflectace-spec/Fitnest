@@ -27,7 +27,7 @@ jobs:
           grep -q "build383.css" public/index.html
           grep -q "app-v383-changelog.js" public/sw.js
           grep -q "build383.css" public/sw.js
-          grep -q "fitnest-shell-v3-8-3" public/sw.js
+          grep -Eq "fitnest-shell-v3-8-[3-9][0-9]*" public/sw.js
 
       - name: Guard public files against secrets
         run: |

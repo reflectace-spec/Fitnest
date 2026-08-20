@@ -100,6 +100,12 @@ Build 3.8.1 fixiert Einstellungsdialoge als echte App-Layer. Der Hintergrund und
 
 Nach der Ersteinrichtung erklärt ein siebenteiliges Tutorial die Bereiche Heute, Plan, Essen, Coach, Übungen und Fortschritt sowie Arbeitszeiten und Push-Einstellungen. „Nicht erneut anzeigen“ speichert die Entscheidung auf dem jeweiligen Gerät. Über die Einstellungen lässt sich das Tutorial jederzeit wieder öffnen.
 
+## Automatische App-Updates
+
+Build 3.8.4 aktiviert neue Service-Worker-Versionen automatisch und lädt offene beziehungsweise von iOS wiederhergestellte App-Fenster genau einmal mit der neuen Build-Version. JavaScript-, CSS- und Manifest-Dateien verwenden versionsfeste URLs. Ein unabhängiger Update-Check vergleicht zusätzlich die produktive `version.json`, ohne Profil-, Trainings-, Ernährungs- oder Gesundheitsdaten zu verändern.
+
+Die aktuelle Build-Nummer ist im Changelog und unter „App & Gerät“ sichtbar. Nur der Workflow `deploy-cloudflare.yml` veröffentlicht die Cloudflare-Produktion und prüft danach App-Shell, Update-Bootstrap, Changelog und Versionsdatei gegen den gemergten Stand.
+
 ## Nächste Builds
 
 1. Build 3.9: native App Grundlage für iOS und Android
