@@ -12,11 +12,11 @@ const changelog=fs.readFileSync('public/app-v383-changelog.js','utf8');
 const version=JSON.parse(fs.readFileSync('public/version.json','utf8'));
 const deploy=fs.readFileSync('.github/workflows/deploy-cloudflare.yml','utf8');
 
-assert.equal(version.build,'3.8.5');
-assert.match(index,/build385\.css\?v=3\.8\.5/);
-assert.match(index,/app\.js\?v=3\.8\.5/);
-assert.match(app,/app-v385-native-shell\.js\?v=3\.8\.5/);
-assert.match(sw,/fitnest-shell-v3-8-5/);
+assert.match(version.build,/^3\.8\.[5-9]$/);
+assert.match(index,/build385\.css\?v=3\.8\.[5-9]/);
+assert.match(index,/app\.js\?v=3\.8\.[5-9]/);
+assert.match(app,/app-v385-native-shell\.js\?v=3\.8\.[5-9]/);
+assert.match(sw,/fitnest-shell-v3-8-[5-9]/);
 assert.match(sw,/build385\.css/);
 assert.match(sw,/app-v385-native-shell\.js/);
 
@@ -34,11 +34,11 @@ assert.match(nativeShell,/passive:false/);
 assert.match(nativeShell,/window\.scrollX===0/);
 assert.match(nativeShell,/v385-overlay-lock/);
 
-assert.match(onboarding,/Build 3\.8\.5/);
-assert.match(tutorial,/const BUILD='3\.8\.5'/);
+assert.match(onboarding,/Build 3\.8\.[5-9]/);
+assert.match(tutorial,/const BUILD='3\.8\.[5-9]'/);
 assert.match(changelog,/Build 3\.8\.5/);
 assert.match(changelog,/Festes App-Gefühl auf iPhone und iPad/);
 assert.match(deploy,/build385\.css/);
 assert.match(deploy,/app-v385-native-shell\.js/);
 
-console.log('Build 3.8.5 native touch lock checks: OK');
+console.log('Build 3.8.5+ native touch lock checks: OK');

@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { exerciseImage } from './exercise-images.js';
 
-const BUILD='2.0';
+const BUILD='3.8.6';
 const state={
   view:'today',
   profile:read('fitnest.profile',null),
