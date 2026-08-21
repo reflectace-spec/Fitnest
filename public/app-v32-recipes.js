@@ -1,4 +1,5 @@
 import { getSupabaseClient } from './app-supabase.js';
+import { CONFIG } from './config.js';
 
 const PLANS='fitnest.nutrition.plans';
 const LOGS='fitnest.nutrition.logs';

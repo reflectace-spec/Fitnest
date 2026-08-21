@@ -49,16 +49,22 @@ jobs:
         run: |
           set -euo pipefail
           for i in 1 2 3 4 5 6; do
+            test "$(curl -fsSL -o /tmp/index.html -w '%{url_effective}' 'https://fitnest.reflectace.workers.dev/')" = "https://fitnest.reflectace.workers.dev/" && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/app.js?sha=${GITHUB_SHA}&try=${i}" -o /tmp/app.js && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/sw.js?sha=${GITHUB_SHA}&try=${i}" -o /tmp/sw.js && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/update-bootstrap.js?sha=${GITHUB_SHA}&try=${i}" -o /tmp/update-bootstrap.js && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/manifest.webmanifest?sha=${GITHUB_SHA}&try=${i}" -o /tmp/manifest.webmanifest && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/app-v32-recipes.js?sha=${GITHUB_SHA}&try=${i}" -o /tmp/app-v32-recipes.js && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/app-v383-changelog.js?sha=${GITHUB_SHA}&try=${i}" -o /tmp/app-v383-changelog.js && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/app-v385-native-shell.js?sha=${GITHUB_SHA}&try=${i}" -o /tmp/app-v385-native-shell.js && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/build385.css?sha=${GITHUB_SHA}&try=${i}" -o /tmp/build385.css && \
             curl -fsSL "https://fitnest.reflectace.workers.dev/version.json?sha=${GITHUB_SHA}&try=${i}" -o /tmp/version.json && \
+            cmp -s public/index.html /tmp/index.html && \
             cmp -s public/app.js /tmp/app.js && \
             cmp -s public/sw.js /tmp/sw.js && \
             cmp -s public/update-bootstrap.js /tmp/update-bootstrap.js && \
+            cmp -s public/manifest.webmanifest /tmp/manifest.webmanifest && \
+            cmp -s public/app-v32-recipes.js /tmp/app-v32-recipes.js && \
             cmp -s public/app-v383-changelog.js /tmp/app-v383-changelog.js && \
             cmp -s public/app-v385-native-shell.js /tmp/app-v385-native-shell.js && \
             cmp -s public/build385.css /tmp/build385.css && \

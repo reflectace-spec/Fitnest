@@ -1,0 +1,34 @@
+name: Fitnest Build 3.8.6 canonical production checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build386:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate canonical runtime JavaScript
+        run: |
+          node --check public/update-bootstrap.js
+          node --check public/sw.js
+          node --input-type=module --check < public/app-v32-recipes.js
+          node tests/build386.test.mjs
+
+      - name: Verify fixed URL and repaired module chain
+        run: |
+          grep -q '"start_url": "./"' public/manifest.webmanifest
+          grep -q "import { CONFIG } from './config.js';" public/app-v32-recipes.js
+          grep -q "Build 3.8.6" public/app-v383-changelog.js
+          ! grep -q "searchParams.set('build'" public/update-bootstrap.js public/sw.js
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public

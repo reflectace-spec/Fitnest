@@ -1,4 +1,4 @@
-const BUILD='3.8.5';
+const BUILD='3.8.6';
 const DISMISSED_KEY='fitnest.pwa.installDismissed.v35';
 const S={prompt:null,registration:null,waiting:null,applying:false,storage:'Wird geprüft …',queued:false};
 
@@ -79,5 +79,13 @@ function init(){
   const app=document.getElementById('app'),sheet=document.getElementById('sheetContent');if(app)new MutationObserver(queueEnhance).observe(app,{childList:true});if(sheet)new MutationObserver(queueEnhance).observe(sheet,{childList:true,subtree:true});
   networkBanner();monitorServiceWorker();inspect();openShortcut();setTimeout(queueEnhance,0);
 }
+
+document.addEventListener('click',event=>{
+  const button=event.target.closest?.('[data-v35-center-open]');
+  if(!button)return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  void openCenter();
+},true);
 
 init();

@@ -1,6 +1,12 @@
-const BUILD='3.8.5';
+const BUILD='3.8.6';
 
 export const CHANGELOG=[
+  {date:'20.08.2026',version:'Build 3.8.6',title:'Kanonische Produktion und vollständiger App-Start',changes:[
+    'Fitnest läuft wieder dauerhaft unter der festen Produktionsadresse fitnest.reflectace.workers.dev ohne sichtbaren Build-Parameter.',
+    'Ein fehlender Konfigurationsimport wurde ergänzt, damit Changelog, App & Gerät, Tutorial und Touch-Sperre zuverlässig geladen werden.',
+    'Aktive Oberflächen zeigen einheitlich den aktuellen Build 3.8.6 statt historischer Modulnummern.',
+    'Startdatei, Service Worker und Versionsprüfung umgehen veraltete Browser- und PWA-Caches zuverlässig.'
+  ]},
   {date:'20.08.2026',version:'Build 3.8.5',title:'Festes App-Gefühl auf iPhone und iPad',changes:[
     'Erststart, Tutorial und Dialoge lassen sich nicht mehr diagonal oder mit mehreren Fingern verschieben.',
     'Nur vorgesehene Inhalte scrollen vertikal, während App-Hintergrund und Vollbild-Ebenen fest bleiben.',

@@ -1,4 +1,4 @@
-name: Fitnest Build 3.8.5 native touch lock checks
+name: Fitnest Build 3.8.5+ native touch lock checks
 
 on:
   pull_request:
@@ -27,7 +27,7 @@ jobs:
           grep -q "touch-action:pan-y" public/build385.css
           grep -q "gesturestart" public/app-v385-native-shell.js
           grep -q "Number(touchCount)>1" public/app-v385-native-shell.js
-          grep -q "Build 3.8.5" public/app-v26-onboarding.js
+          grep -Eq "Build 3.8.[5-9]" public/app-v26-onboarding.js
 
       - name: Guard public files against secrets
         run: |
