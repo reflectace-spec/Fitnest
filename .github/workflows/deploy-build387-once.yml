@@ -1,0 +1,61 @@
+name: Deploy Fitnest Build 3.8.7 once
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fitnest-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.head_ref == 'agent/deploy-build-3-8-7-production'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify approved build
+        run: |
+          grep -q '"build": "3.8.7"' public/version.json
+          grep -q "eyebrow.textContent!==buildLabel" public/app-v383-changelog.js
+          grep -q '"start_url": "./"' public/manifest.webmanifest
+      - name: Validate Cloudflare secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Deploy production Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy
+      - name: Verify canonical production
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6; do
+            test "$(curl -fsSL -o /tmp/index.html -w '%{url_effective}' 'https://fitnest.reflectace.workers.dev/')" = "https://fitnest.reflectace.workers.dev/" && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/app.js?try=${i}" -o /tmp/app.js && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/sw.js?try=${i}" -o /tmp/sw.js && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/update-bootstrap.js?try=${i}" -o /tmp/update-bootstrap.js && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/manifest.webmanifest?try=${i}" -o /tmp/manifest.webmanifest && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/app-v383-changelog.js?try=${i}" -o /tmp/app-v383-changelog.js && \
+            curl -fsSL "https://fitnest.reflectace.workers.dev/version.json?try=${i}" -o /tmp/version.json && \
+            cmp -s public/index.html /tmp/index.html && \
+            cmp -s public/app.js /tmp/app.js && \
+            cmp -s public/sw.js /tmp/sw.js && \
+            cmp -s public/update-bootstrap.js /tmp/update-bootstrap.js && \
+            cmp -s public/manifest.webmanifest /tmp/manifest.webmanifest && \
+            cmp -s public/app-v383-changelog.js /tmp/app-v383-changelog.js && \
+            cmp -s public/version.json /tmp/version.json && exit 0
+            sleep 5
+          done
+          exit 1
