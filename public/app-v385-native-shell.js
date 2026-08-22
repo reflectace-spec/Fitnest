@@ -1,4 +1,4 @@
-const BUILD='3.8.6';
+const BUILD='3.8.7';
 const OVERLAY_SELECTOR='#v26Onboarding,.v381-tutorial,dialog[open],.v26-summary-backdrop,.v28-dialog-backdrop,.v33-summary-backdrop';
 const SCROLLER_SELECTOR='.v26-onboarding,.sheet-inner,.v381-tutorial-body,.v26-summary-card';
 const HORIZONTAL_SELECTOR='.week-strip,.v25-category-row,.nutrition-profile-tabs';

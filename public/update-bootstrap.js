@@ -1,5 +1,5 @@
 (function(){
-  const BUILD='3.8.6';
+  const BUILD='3.8.7';
   let checking=false;
   let labelRefreshQueued=false;
 

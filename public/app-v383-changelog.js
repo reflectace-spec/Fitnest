@@ -1,6 +1,12 @@
-const BUILD='3.8.6';
+const BUILD='3.8.7';
 
 export const CHANGELOG=[
+  {date:'22.08.2026',version:'Build 3.8.7',title:'Burger-Menü reagiert wieder zuverlässig',changes:[
+    'Das Profil- und Burger-Menü oben rechts öffnet sich wieder ohne die Oberfläche zu blockieren.',
+    'Die Build-Beschriftung wird nur noch geändert, wenn sich ihr Inhalt tatsächlich unterscheidet.',
+    'Die Changelog-Erweiterung löst dadurch keine eigene endlose Aktualisierungsschleife mehr aus.',
+    'Ein Regressionstest schützt das Menü künftig vor demselben Fehler.'
+  ]},
   {date:'20.08.2026',version:'Build 3.8.6',title:'Kanonische Produktion und vollständiger App-Start',changes:[
     'Fitnest läuft wieder dauerhaft unter der festen Produktionsadresse fitnest.reflectace.workers.dev ohne sichtbaren Build-Parameter.',
     'Ein fehlender Konfigurationsimport wurde ergänzt, damit Changelog, App & Gerät, Tutorial und Touch-Sperre zuverlässig geladen werden.',
@@ -214,7 +220,8 @@ function injectSettings(){
   const content=document.getElementById('sheetContent');
   if(!content||content.querySelector('.sheet-head h2')?.textContent!=='Einstellungen')return;
   const eyebrow=content.querySelector('.sheet-head .eyebrow');
-  if(eyebrow&&eyebrow.textContent.startsWith('Fitnest · Build'))eyebrow.textContent=`Fitnest · Build ${BUILD}`;
+  const buildLabel=`Fitnest · Build ${BUILD}`;
+  if(eyebrow&&eyebrow.textContent.startsWith('Fitnest · Build')&&eyebrow.textContent!==buildLabel)eyebrow.textContent=buildLabel;
   if(content.querySelector('[data-v383-changelog]'))return;
   const grid=content.querySelector('.form-grid');
   if(!grid)return;
