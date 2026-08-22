@@ -1,6 +1,6 @@
-// Build 3.8.6: canonical production URL, repaired module chain and native touch lock.
-const BUILD='3.8.6';
-const CACHE='fitnest-shell-v3-8-6';
+// Build 3.8.7: canonical production URL, repaired module chain and native touch lock.
+const BUILD='3.8.7';
+const CACHE='fitnest-shell-v3-8-7';
 const VERSIONED_ASSETS=[
   './styles.css','./build2.css','./build21.css','./build22.css','./build23.css','./build24.css','./build241.css','./build243.css','./build244.css','./build25.css','./build251.css','./build26.css','./build261.css','./build27.css','./build28.css','./build29.css','./build30.css','./build31.css','./build32.css','./build33.css','./build34.css','./build35.css','./build36.css','./build37.css','./build38.css','./build381.css','./build382.css','./build383.css','./build385.css',
   './update-bootstrap.js','./app.js','./app-v26-bootstrap.js','./app-v2.js','./app-v24-guard.js','./app-v21-addon.js','./app-v21-navfix.js','./app-v22-addon.js','./app-v23-addon.js','./app-v24-addon.js','./app-v241-addon.js','./app-v242-addon.js','./app-v243-addon.js','./app-v244-addon.js','./app-v244-safeapply.js','./app-v251-wiki.js','./app-v251-native.js','./app-v26-onboarding.js','./app-v261-onboarding-hotfix.js','./app-v26-surfaces.js','./app-v27-auth.js','./app-v27-sync.js','./app-v27-guard.js','./app-v28-daily.js','./app-v29-adaptive.js','./app-v30-nutrition.js','./app-v31-shopping.js','./app-v32-recipes.js','./app-v33-workout.js','./app-v34-progress.js','./app-v35-pwa.js','./app-v36-health.js','./app-v37-coach.js','./app-v38-work-schedule.js','./app-v381-tutorial.js','./app-v382-progress-hotfix.js','./app-v383-changelog.js','./app-v385-native-shell.js','./manifest.webmanifest'

@@ -1,0 +1,30 @@
+name: Fitnest Build 3.8.7 burger menu checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build387:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate burger menu hotfix
+        run: |
+          node --input-type=module --check < public/app-v383-changelog.js
+          node tests/build387.test.mjs
+
+      - name: Verify idempotent settings enhancement
+        run: |
+          grep -q "eyebrow.textContent!==buildLabel" public/app-v383-changelog.js
+          grep -q "Burger-Menü reagiert wieder zuverlässig" public/app-v383-changelog.js
+
+      - name: Guard public files against secrets
+        run: |
+          ! grep -R -E "service_role|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY|sk-[A-Za-z0-9_-]{20,}" public
